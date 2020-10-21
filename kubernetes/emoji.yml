@@ -1,0 +1,92 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: emoji
+  namespace: emojivoto
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: emoji
+  namespace: emojivoto
+  labels:
+    app.kubernetes.io/name: emoji
+    app.kubernetes.io/part-of: emojivoto
+    app.kubernetes.io/version: v1
+spec:
+  serviceName: "emoji"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emoji-svc
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: emoji-svc
+        version: v1
+    spec:
+      serviceAccountName: emoji
+      containers:
+      - env:
+        - name: EDG_COORDINATOR_ADDR
+          value: coordinator-mesh-svc:25554
+        - name: EDG_MARBLE_TYPE
+          value: emoji-svc
+        - name: EDG_MARBLE_DNS_NAMES
+          value: "emoji-svc,emoji-svc.emojivoto,emoji-svc.emojivoto.svc.cluster.local"
+        - name: EDG_MARBLE_UUID_FILE
+          value: "/emoji-svc/data/uuid"
+        - name: OE_SIMULATION
+          valueFrom:
+            configMapKeyRef:
+              name: oe-config
+              key: OE_SIMULATION
+        image: ghcr.io/edgelesssys/emojivoto-emoji-svc:v1
+        name: emoji-svc
+        ports:
+        - containerPort: 8080
+          name: grpc
+        - containerPort: 8801
+          name: prom
+        resources:
+          requests:
+            cpu: 100m
+        volumeMounts:
+        - name: emoji-data
+          mountPath: /emoji-svc/data
+        - name: dev-sgx
+          mountPath: /dev/sgx
+        securityContext:
+          privileged: true
+      volumes:
+      - name: dev-sgx
+        hostPath:
+          path: /dev/sgx
+      imagePullSecrets:
+      - name: regcred
+  volumeClaimTemplates:
+  - metadata:
+      name: emoji-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: emoji-svc
+  namespace: emojivoto
+spec:
+  selector:
+    app: emoji-svc
+  ports:
+  - name: grpc
+    port: 8080
+    targetPort: 8080
+  - name: prom
+    port: 8801
+    targetPort: 8801

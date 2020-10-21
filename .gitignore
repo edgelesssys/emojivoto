@@ -1,4 +1,7 @@
+.vscode
 .idea
 **/target
-**/gen
 vendor
+**/build
+**/**/build
+go.sum

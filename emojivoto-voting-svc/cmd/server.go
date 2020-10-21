@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"log"
 	"net"
@@ -10,31 +12,53 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/buoyantio/emojivoto/emojivoto-voting-svc/api"
-	"github.com/buoyantio/emojivoto/emojivoto-voting-svc/voting"
+	"github.com/edgelesssys/emojivoto/emojivoto-voting-svc/api"
+	"github.com/edgelesssys/emojivoto/emojivoto-voting-svc/voting"
 
 	"contrib.go.opencensus.io/exporter/ocagent"
-	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opencensus.io/plugin/ocgrpc"
 	"go.opencensus.io/trace"
 	"google.golang.org/grpc"
-)
-
-var (
-	grpcPort    = os.Getenv("GRPC_PORT")
-	promPort    = os.Getenv("PROM_PORT")
-	ocagentHost = os.Getenv("OC_AGENT_HOST")
+	"google.golang.org/grpc/credentials"
 )
 
 func main() {
+	var (
+		grpcPort    = os.Getenv("GRPC_PORT")
+		promPort    = os.Getenv("PROM_PORT")
+		ocagentHost = os.Getenv("OC_AGENT_HOST")
+		tlsCertPem  = os.Getenv("TLS_CERT")
+		privk       = os.Getenv("TLS_PRIV_KEY")
+		rootCA      = os.Getenv("ROOT_CA")
+	)
 
 	if grpcPort == "" {
 		log.Fatalf("GRPC_PORT (currently [%s]) environment variable must me set to run the server.", grpcPort)
 	}
 
+	// create CertPool
+	roots := x509.NewCertPool()
+	if !roots.AppendCertsFromPEM([]byte(rootCA)) {
+		log.Fatalf("cannot append rootCa to CertPool")
+	}
+	// create certificate
+	tlsCert, err := tls.X509KeyPair([]byte(tlsCertPem), []byte(privk))
+	if err != nil {
+		log.Fatalf("cannot create TLS cert: %v", err)
+	}
+	// create TLS config
+	serverCfg := &tls.Config{
+		ClientCAs:    roots,
+		Certificates: []tls.Certificate{tlsCert},
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+	}
+	// create creds
+	serverCreds := credentials.NewTLS(serverCfg)
+
 	oce, err := ocagent.NewExporter(
-		ocagent.WithInsecure(),
+		ocagent.WithTLSCredentials(serverCreds),
 		ocagent.WithReconnectionPeriod(5*time.Second),
 		ocagent.WithAddress(ocagentHost),
 		ocagent.WithServiceName("voting"))
@@ -69,6 +93,7 @@ func main() {
 			grpc.StatsHandler(&ocgrpc.ServerHandler{}),
 			grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 			grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
+			grpc.Creds(serverCreds),
 		)
 		api.NewGrpServer(grpcServer, poll)
 		grpc_prometheus.Register(grpcServer)

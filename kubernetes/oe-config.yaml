@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oe-config
+  namespace: emojivoto
+data:
+  OE_SIMULATION: "0"

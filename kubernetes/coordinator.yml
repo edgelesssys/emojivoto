@@ -1,0 +1,105 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: coordinator
+  namespace: emojivoto
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: coordinator
+  namespace: emojivoto
+  labels:
+    app.kubernetes.io/name: coordinator
+    app.kubernetes.io/part-of: emojivoto
+    app.kubernetes.io/version: v1
+spec:
+  serviceName: "coordinator"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coordinator-svc
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: coordinator-svc
+        version: v1
+    spec:
+      serviceAccountName: coordinator
+      containers:
+        - env:
+          - name: EDG_MESH_SERVER_ADDR
+            value: "0.0.0.0:25554"
+          - name: EDG_CLIENT_SERVER_ADDR
+            value: "0.0.0.0:25555"
+          - name: EDG_COORDINATOR_DNS_NAMES
+            value: "coordinator-mesh-svc,coordinator-client-svc,coordinator-mesh-svc.emojivoto,coordinator-client-svc.emojivoto,coordinator-mesh-svc.emojivoto.svc.cluster.local,coordinator-client-svc.emojivoto.svc.cluster.local"
+          - name: EDG_COORDINATOR_SEAL_DIR
+            value: "/coordinator-svc/data/"
+          - name: OE_SIMULATION
+            valueFrom:
+              configMapKeyRef:
+                name: oe-config
+                key: OE_SIMULATION
+          image: ghcr.io/edgelesssys/coordinator:latest
+          name: coordinator-svc
+          ports:
+          - containerPort: 25555
+            name: http
+          - containerPort: 25554
+            name: grcp
+          resources:
+            requests:
+              cpu: 100m
+          volumeMounts:
+          - name: coordinator-data
+            mountPath: /coordinator-svc/data
+          - name: dev-sgx
+            mountPath: /dev/sgx
+          securityContext:
+            privileged: true
+      volumes:
+      - name: dev-sgx
+        hostPath:
+          path: /dev/sgx
+      imagePullSecrets:
+      - name: regcred
+  volumeClaimTemplates:
+  - metadata:
+      name: coordinator-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coordinator-client-svc
+  namespace: emojivoto
+spec:
+  type: LoadBalancer
+  selector:
+    app: coordinator-svc
+  ports:
+  - name: http
+    port: 25555
+    targetPort: 25555
+    nodePort: 30005
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coordinator-mesh-svc
+  namespace: emojivoto
+spec:
+  type: ClusterIP
+  selector:
+    app: coordinator-svc
+  ports:
+  - name: grcp
+    port: 25554
+    targetPort: 25554

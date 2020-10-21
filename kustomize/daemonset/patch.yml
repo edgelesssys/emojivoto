@@ -1,6 +1,0 @@
-- op: replace
-  path: /kind
-  value: DaemonSet
-
-- op: remove
-  path: /spec/replicas

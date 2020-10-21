@@ -1,0 +1,73 @@
+{
+	"Packages": {
+		"web": {
+			"Debug": true,
+			"SecurityVersion": 1,
+			"ProductID": [1]
+		},
+		"emoji-svc": {
+			"Debug": true,
+			"SecurityVersion": 1,
+			"ProductID": [2]
+		},
+		"voting-svc": {
+			"Debug": true,
+			"SecurityVersion": 1,
+			"ProductID": [3]
+		}
+	},
+	"Infrastructures": {
+		"Azure": {
+			"QESVN": 2,
+			"PCESVN": 3,
+			"CPUSVN": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+			"RootCA": [3,3,3]
+		}
+	},
+	"Marbles": {
+		"web": {
+			"Package": "web",
+			"Parameters": {
+				"Env": {
+					"ROOT_CA": "$$root_ca",
+					"TLS_CERT": "$$marble_cert",
+					"TLS_PRIV_KEY": "$$marble_key",
+					"WEB_PORT": "4433",
+					"DOMAIN": "edgeless01.uksouth.cloudapp.azure.com",
+				  	"EMOJISVC_HOST": "emoji-svc.emojivoto:8080",
+				  	"VOTINGSVC_HOST": "voting-svc.emojivoto:8080",
+				  	"INDEX_BUNDLE": "/edg/hostfs/dist/index_bundle.js"
+				}
+			}
+		},
+		"emoji-svc": {
+			"Package": "emoji-svc",
+			"Parameters": {
+				"Env": {
+					"ROOT_CA": "$$root_ca",
+					"TLS_CERT": "$$marble_cert",
+					"TLS_PRIV_KEY": "$$marble_key",
+					"GRPC_PORT": "8080",
+					"PROM_PORT": "8801",
+					"OC_AGENT_HOST": "oc-collector.tracing:55678"
+				}
+			}
+		},
+		"voting-svc": {
+			"Package": "voting-svc",
+			"Parameters": {
+				"Env": {
+					"ROOT_CA": "$$root_ca",
+					"TLS_CERT": "$$marble_cert",
+					"TLS_PRIV_KEY": "$$marble_key",
+					"GRPC_PORT": "8080",
+					"PROM_PORT": "8801",
+					"OC_AGENT_HOST": "oc-collector.tracing:55678"
+				}
+			}
+		}
+	},
+	"Clients": {
+		"owner": [9,9,9]
+	}
+}

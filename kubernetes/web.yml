@@ -1,0 +1,105 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: web
+  namespace: emojivoto
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+  namespace: emojivoto
+  labels:
+    app.kubernetes.io/name: web
+    app.kubernetes.io/part-of: emojivoto
+    app.kubernetes.io/version: v1
+spec:
+  serviceName: "web"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-svc
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: web-svc
+        version: v1
+    spec:
+      serviceAccountName: web
+      containers:
+      - env:
+        - name: EDG_COORDINATOR_ADDR
+          value: "coordinator-mesh-svc.emojivoto:25554"
+        - name: EDG_MARBLE_TYPE
+          value: "web"
+        - name: EDG_MARBLE_DNS_NAMES
+          value: "localhost,web-svc,web-svc.emojivoto,web-svc.emojivoto.svc.cluster.local"
+        - name: EDG_MARBLE_UUID_FILE
+          value: "/web-svc/data/uuid"
+        - name: OE_SIMULATION
+          valueFrom:
+            configMapKeyRef:
+              name: oe-config
+              key: OE_SIMULATION
+        image: ghcr.io/edgelesssys/emojivoto-web:v1
+        name: web-svc
+        ports:
+        - containerPort: 4433
+          name: https
+        - containerPort: 8080
+          name: http
+        resources:
+          requests:
+            cpu: 100m
+        volumeMounts:
+        - name: web-data
+          mountPath: /web-svc/data
+        - name: dev-sgx
+          mountPath: /dev/sgx
+        securityContext:
+          privileged: true
+      volumes:
+      - name: dev-sgx
+        hostPath:
+          path: /dev/sgx
+      imagePullSecrets:
+      - name: regcred
+  volumeClaimTemplates:
+  - metadata:
+      name: web-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc
+  namespace: emojivoto
+spec:
+  type: NodePort
+  selector:
+    app: web-svc
+  ports:
+  - name: https
+    port: 443
+    targetPort: 4433
+    nodePort: 30001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc-http
+  namespace: emojivoto
+spec:
+  type: ClusterIP
+  selector:
+    app: web-svc
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080

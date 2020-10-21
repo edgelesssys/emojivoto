@@ -1,6 +1,7 @@
 package web
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,7 +11,7 @@ import (
 	"net/http"
 	"strconv"
 
-	pb "github.com/buoyantio/emojivoto/emojivoto-web/gen/proto"
+	pb "github.com/edgelesssys/emojivoto/emojivoto-web/gen/proto"
 	"go.opencensus.io/plugin/ochttp"
 )
 
@@ -375,13 +376,23 @@ func writeError(err error, w http.ResponseWriter, r *http.Request, status int) {
 	json.NewEncoder(w).Encode(errorMessage)
 }
 
-func handle(path string, h func (w http.ResponseWriter, r *http.Request)) {
-	http.Handle(path, &ochttp.Handler {
+func handle(path string, h func(w http.ResponseWriter, r *http.Request)) {
+	http.Handle(path, &ochttp.Handler{
 		Handler: http.HandlerFunc(h),
 	})
 }
 
-func StartServer(webPort, webpackDevServer, indexBundle string, emojiServiceClient pb.EmojiServiceClient, votingClient pb.VotingServiceClient) {
+func redirect(w http.ResponseWriter, req *http.Request) {
+	target := "https://" + req.Host + req.URL.Path
+	if len(req.URL.RawQuery) > 0 {
+		target += "?" + req.URL.RawQuery
+	}
+	log.Printf("redirect to: %s", target)
+	http.Redirect(w, req, target,
+		http.StatusTemporaryRedirect)
+}
+
+func StartServer(webPort, domain, webpackDevServer, indexBundle string, emojiServiceClient pb.EmojiServiceClient, votingClient pb.VotingServiceClient, tlsConfig *tls.Config) {
 	webApp := &WebApp{
 		emojiServiceClient:  emojiServiceClient,
 		votingServiceClient: votingClient,
@@ -401,7 +412,30 @@ func StartServer(webPort, webpackDevServer, indexBundle string, emojiServiceClie
 	// TODO: make static assets dir configurable
 	http.Handle("/dist/", http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
 
-	err := http.ListenAndServe(fmt.Sprintf(":%s", webPort), nil)
+	// certManager := autocert.Manager{
+	// 	Prompt:     autocert.AcceptTOS,
+	// 	HostPolicy: autocert.HostWhitelist(domain),
+	// 	Cache:      autocert.DirCache("/edg/hostfs/certs"),
+	// }
+	// tlsConfig := certManager.TLSConfig()
+	// server := http.Server{
+	// 	Addr:      fmt.Sprintf(":%s", webPort),
+	// 	Handler:   nil,
+	// 	TLSConfig: tlsConfig,
+	// }
+
+	// redirect every http request to https
+	// go http.ListenAndServe(":8080", certManager.HTTPHandler(nil))
+	// go http.ListenAndServe(":8080", http.HandlerFunc(redirect))
+	// server.ListenAndServeTLS("", "")
+
+	server := http.Server{
+		Addr:      fmt.Sprintf(":%s", webPort),
+		Handler:   nil,
+		TLSConfig: tlsConfig,
+	}
+	go http.ListenAndServe(":8080", http.HandlerFunc(redirect))
+	err := server.ListenAndServeTLS("", "")
 	if err != nil {
 		panic(err)
 	}

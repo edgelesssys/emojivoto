@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"testing"
 
-	pb "github.com/buoyantio/emojivoto/emojivoto-web/gen/proto"
+	pb "github.com/edgelesssys/emojivoto/emojivoto-web/gen/proto"
 	"google.golang.org/grpc"
 )
 
