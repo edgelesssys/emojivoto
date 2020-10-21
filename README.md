@@ -25,7 +25,7 @@ Deploy the application to Minikube using the Edgeless Mesh.
 1. Private repo setup
 
     ```bash
-    toos/private-repo-setup.sh
+    tools/private-repo-setup.sh
     ```
 
 1. Deploy emojivoto
