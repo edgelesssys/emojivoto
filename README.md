@@ -137,7 +137,6 @@ go run emojivoto-web/cmd/vote-bot/main.go
 
 ```bash
 tools/install-dependencies.sh
-tools/build_all.sh
+mkdir -p build && pushd build && cmake .. && make && popd
 tools/build_docker.sh
 ```
-
