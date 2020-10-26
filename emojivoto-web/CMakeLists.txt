@@ -63,5 +63,5 @@ add_custom_target(emoji-web-sign ALL DEPENDS enclave.signed)
 add_custom_command(
   OUTPUT config.json
   DEPENDS enclave.signed
-  COMMAND $(CMAKE_SOURCE_DIR)/../tools/create_config.py -e $(CMAKE_BINARY_DIR)/enclave.signed -o $(CMAKE_BINARY_DIR)/config.json)
+  COMMAND ${PROJECT_SOURCE_DIR}/../tools/create_config.py -e ${CMAKE_CURRENT_BINARY_DIR}/enclave.signed -o ${CMAKE_CURRENT_BINARY_DIR}/config.json)
 add_custom_target(emoji-web-config ALL DEPENDS config.json)
