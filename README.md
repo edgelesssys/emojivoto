@@ -53,10 +53,9 @@ Deploy the application to Minikube using the Edgeless Mesh.
     ```
 
 1. Install the Edgeless Remote Attestation Tool
+    1. Check [requirements](https://github.com/edgelesssys/era#requirements)
+    2. See [install](https://github.com/edgelesssys/era#install)
 
-    ```bash
-    go install github.com/edgelesssys/era/cmd/era
-    ```
 
 1. Verify the Quote and get the Mesh's Root-Certificate
     * If you're running on a machine capable of doing SGX DCAP Remote Attestation
