@@ -1,0 +1,5 @@
+imagePullSecrets:
+  - name: regcred
+simulation:
+  OE_SIMULATION: "1"
+

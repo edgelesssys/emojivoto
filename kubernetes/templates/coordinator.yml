@@ -50,20 +50,18 @@ spec:
           - containerPort: 25554
             name: grcp
           resources:
-            requests:
-              cpu: 100m
+            {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
           - name: coordinator-data
             mountPath: /coordinator-svc/data
-          resources:
-            limits:
-              kubernetes.azure.com/sgx_epc_mem_in_MiB: 10
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-      - name: regcred
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
       tolerations:
-      - key: kubernetes.azure.com/sgx_epc_mem_in_MiB
-        operator: Exists
-        effect: NoSchedule
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   volumeClaimTemplates:
   - metadata:
       name: coordinator-data

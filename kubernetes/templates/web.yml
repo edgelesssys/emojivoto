@@ -50,25 +50,18 @@ spec:
         - containerPort: 8080
           name: http
         resources:
-          requests:
-            cpu: 100m
-          limits:
-            kubernetes.azure.com/sgx_epc_mem_in_MiB: 10
+          {{- toYaml .Values.resources | nindent 12 }}
         volumeMounts:
         - name: web-data
           mountPath: /web-svc/data
-        - name: dev-sgx
-          mountPath: /dev/sgx
-      volumes:
-      - name: dev-sgx
-        hostPath:
-          path: /dev/sgx
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-      - name: regcred
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
       tolerations:
-      - key: kubernetes.azure.com/sgx_epc_mem_in_MiB
-        operator: Exists
-        effect: NoSchedule
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   volumeClaimTemplates:
   - metadata:
       name: web-data

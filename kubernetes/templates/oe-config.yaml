@@ -4,4 +4,4 @@ metadata:
   name: oe-config
   namespace: emojivoto
 data:
-  OE_SIMULATION: "0"
+  {{- toYaml .Values.simulation | nindent 2}}

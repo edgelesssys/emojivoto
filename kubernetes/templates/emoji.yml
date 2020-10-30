@@ -50,25 +50,18 @@ spec:
         - containerPort: 8801
           name: prom
         resources:
-          requests:
-            cpu: 100m
-          limits:
-            kubernetes.azure.com/sgx_epc_mem_in_MiB: 10
+          {{- toYaml .Values.resources | nindent 12 }}
         volumeMounts:
         - name: emoji-data
           mountPath: /emoji-svc/data
-        - name: dev-sgx
-          mountPath: /dev/sgx
-      volumes:
-      - name: dev-sgx
-        hostPath:
-          path: /dev/sgx
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-      - name: regcred
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
       tolerations:
-      - key: kubernetes.azure.com/sgx_epc_mem_in_MiB
-        operator: Exists
-        effect: NoSchedule
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   volumeClaimTemplates:
   - metadata:
       name: emoji-data
