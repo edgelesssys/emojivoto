@@ -11,6 +11,7 @@ The application is composed of the following 3 services:
 * [emojivoto-voting-svc](emojivoto-voting-svc/): gRPC API for voting and leaderboard
 
 Confidential emojivoto is build as a confidential computing application:
+
 * Each service runs in a confidential enclave using [EdgelessRT](https://www.edgeless.systems/)
 * The application is distributed, configured, and connected using [EdgelessMesh](https://www.edgeless.systems/)
 
@@ -30,15 +31,19 @@ Deploy the application to Minikube using the Edgeless Mesh.
 
 1. Deploy emojivoto
 
+    Deploy with [helm](https://helm.sh/docs/intro/install/)
+
+    * If your deploying on a cluster with nodes that support SGX1+FLC (e.g. AKS or minikube + Azure Standard_DC*s)
+
     ```bash
-    kubectl apply -f kubernetes/
+    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes -n emojivoto
     ```
 
-    * If you're not running on a machine capable of doing SGX DCAP Remote Attestation
+    * Otherwise
 
-        ```bash
-        kubectl -n emojivoto get cm oe-config -o yaml | sed -e 's|OE_SIMULATION: "0"|OE_SIMULATION: "1"|' | kubectl apply -f -
-        ```
+    ```bash
+    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes -n emojivoto
+    ```
 
 1. Pull the configuration and build the manifest
 
@@ -56,9 +61,8 @@ Deploy the application to Minikube using the Edgeless Mesh.
     1. Check [requirements](https://github.com/edgelesssys/era#requirements)
     2. See [install](https://github.com/edgelesssys/era#install)
 
-
 1. Verify the Quote and get the Mesh's Root-Certificate
-    * If you're running on a machine capable of doing SGX DCAP Remote Attestation
+    * If you're running on a cluster with nodes that support SGX1+FLC
 
         ```bash
         era -c mesh.config -h $EDG_COORDINATOR_ADDR -o mesh.crt
@@ -78,7 +82,7 @@ Deploy the application to Minikube using the Edgeless Mesh.
 
 1. Install Mesh-Certificate in your browser
     * **Warning** Be careful when adding certificates to your browser. We only do this temporarly for the sake of this demo. Make sure you don't use your browser for other activities in the meanwhile and remove the certificate afterwards.
-    * Chrome: 
+    * Chrome:
         * Go to <chrome://settings/security>
         * Go to `"Manage certificates" > "Import..."`
         * Follow the "Certificate Import Wizard" and import the `mesh.crt` of the previous step as a "Personal" certificate
@@ -103,24 +107,29 @@ Deploy the application to Minikube using the Edgeless Mesh.
 
     * Browse to [https://localhost:30001](https://localhost:30001) or [https://localhost](https://localhost) depending on your port-forwarding choice above.
     * Notes on DNS: If your running emojivoto on a remote machine you can add the machine's DNS name to the emojivoto certificate (e.g. `emojivoto.example.org`):
-        * Open the `kubernetes/web.yml` file
-        * Go to the enviornment variable settings in the StatefulSet: spec.template.spec.containers.env
-        * Add your DNS name to `EDG_MARBLE_DNS_NAMES`: 
-            * `"emojivoto.example.org,web-svc,web-svc.emojivoto,web-svc.emojivoto.svc.cluster.local"`
+        * Open the `kubernetes/sgx_values.yaml` or `kubernetes/nosgx_values.yaml` file depending on your type of deployment
+        * Add your DNS name to the `hosts` field: 
+            * `hosts: "emojivoto.example.org,localhost,web-svc,web-svc.emojivoto,web-svc.emojivoto.svc.cluster.local"`
         * You need to apply your changes with:
+            * If your using `kubernetes/sgx_values.yaml` for your deployment:
 
-            ```bash
-            kubectl apply -f kubernetes/
-            ```
+                ```bash
+                helm upgrade -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes -n emojivoto
+                ```
 
+            * Otherwise:
+
+                ```bash
+                helm upgrade -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes -n emojivoto
+                ```
 
 ### Generating some traffic
 
 The `VoteBot` service can generate some traffic for you. It votes on emoji
 "randomly" as follows:
 
-- It votes for :doughnut: 15% of the time.
-- When not voting for :doughnut:, it picks an emoji at random
+* It votes for :doughnut: 15% of the time.
+* When not voting for :doughnut:, it picks an emoji at random
 
 If you're running the app using the instructions above, the VoteBot will have
 been deployed and will start sending traffic to the vote endpoint.
