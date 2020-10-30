@@ -55,16 +55,15 @@ spec:
           volumeMounts:
           - name: coordinator-data
             mountPath: /coordinator-svc/data
-          - name: dev-sgx
-            mountPath: /dev/sgx
-          securityContext:
-            privileged: true
-      volumes:
-      - name: dev-sgx
-        hostPath:
-          path: /dev/sgx
+          resources:
+            limits:
+              kubernetes.azure.com/sgx_epc_mem_in_MiB: 10
       imagePullSecrets:
       - name: regcred
+      tolerations:
+      - key: kubernetes.azure.com/sgx_epc_mem_in_MiB
+        operator: Exists
+        effect: NoSchedule
   volumeClaimTemplates:
   - metadata:
       name: coordinator-data

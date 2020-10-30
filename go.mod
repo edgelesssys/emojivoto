@@ -6,6 +6,7 @@ require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.0
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/edgelesssys/coordinator v0.0.0-20201015164107-689c0810f2eb
+	github.com/edgelesssys/era v0.0.0-20201009150044-916cb8b147e1 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.4.3
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0

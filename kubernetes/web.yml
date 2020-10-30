@@ -52,19 +52,23 @@ spec:
         resources:
           requests:
             cpu: 100m
+          limits:
+            kubernetes.azure.com/sgx_epc_mem_in_MiB: 10
         volumeMounts:
         - name: web-data
           mountPath: /web-svc/data
         - name: dev-sgx
           mountPath: /dev/sgx
-        securityContext:
-          privileged: true
       volumes:
       - name: dev-sgx
         hostPath:
           path: /dev/sgx
       imagePullSecrets:
       - name: regcred
+      tolerations:
+      - key: kubernetes.azure.com/sgx_epc_mem_in_MiB
+        operator: Exists
+        effect: NoSchedule
   volumeClaimTemplates:
   - metadata:
       name: web-data
