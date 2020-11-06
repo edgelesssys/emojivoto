@@ -23,26 +23,26 @@ Confidential emojivoto is build as a confidential computing application:
 
 Deploy the application to Minikube using the Edgeless Mesh.
 
-1. Private repo setup
-
-    ```bash
-    tools/private-repo-setup.sh
-    ```
-
-1. Deploy emojivoto
+1. Install Edgeless Mesh
 
     Deploy with [helm](https://helm.sh/docs/intro/install/)
+
+    ```bash
+    helm repo add edgeless https://helm.edgeless.systems
+    helm repo update
+    tools/private-repo-setup.sh edg-mesh
+    ```
 
     * If your deploying on a cluster with nodes that support SGX1+FLC (e.g. AKS or minikube + Azure Standard_DC*s)
 
     ```bash
-    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes -n emojivoto
+    helm install  edg-mesh-coordinator edgeless/coordinator --set global.pullSecret=regcred
     ```
 
     * Otherwise
 
     ```bash
-    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes -n emojivoto
+    helm install edg-mesh-coordinator edgeless/coordinator --set global.pullSecret=regcred --set coordinator.resources=null --set coordinator.OE_SIMULATION=1 --set tolerations=null
     ```
 
 1. Pull the configuration and build the manifest
@@ -80,6 +80,27 @@ Deploy the application to Minikube using the Edgeless Mesh.
     curl --silent --cacert mesh.crt -X POST -H  "Content-Type: application/json" --data-binary @tools/manifest.json "https://$EDG_COORDINATOR_SVC/manifest"
     ```
 
+
+1. Deploy emojivoto
+
+    Private repo setup:
+
+    ```bash
+    tools/private-repo-setup.sh emojivoto
+    ```
+
+    * If your deploying on a cluster with nodes that support SGX1+FLC (e.g. AKS or minikube + Azure Standard_DC*s)
+
+    ```bash
+    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes -n emojivoto
+    ```
+
+    * Otherwise
+
+    ```bash
+    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes -n emojivoto
+    ```
+    
 1. Install Mesh-Certificate in your browser
     * **Warning** Be careful when adding certificates to your browser. We only do this temporarly for the sake of this demo. Make sure you don't use your browser for other activities in the meanwhile and remove the certificate afterwards.
     * Chrome:

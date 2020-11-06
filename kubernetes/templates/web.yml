@@ -30,9 +30,9 @@ spec:
       containers:
       - env:
         - name: EDG_COORDINATOR_ADDR
-          value: "coordinator-mesh-svc.emojivoto:25554"
+          value: coordinator-mesh-api.edg-mesh:25554
         - name: EDG_MARBLE_TYPE
-          value: "web"
+          value: web
         - name: EDG_MARBLE_DNS_NAMES
           value: {{ .Values.hosts }}
         - name: EDG_MARBLE_UUID_FILE
