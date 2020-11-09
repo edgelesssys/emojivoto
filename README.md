@@ -170,6 +170,15 @@ mkdir -p build && pushd build && cmake .. && make && popd
 tools/build_docker.sh
 ```
 
+## Docker
+
+Build docker images:
+```bash
+docker buildx build --secret id=repoaccess,src=<path to .netrc> --secret id=signingkey,src=<path to private.pem> --target release_web --tag ghcr.io/edgelesssys/emojivoto-web:latest .
+docker buildx build --secret id=repoaccess,src=<path to .netrc> --secret id=signingkey,src=<path to private.pem> --target release_emoji_svc --tag ghcr.io/edgelesssys/emojivoto-emoji-svc:latest .
+docker buildx build --secret id=repoaccess,src=<path to .netrc> --secret id=signingkey,src=<path to private.pem> --target release_voting_svc --tag ghcr.io/edgelesssys/emojivoto-voting-svc:latest .
+```
+
 ## License
 
 Copyright 2020 Buoyant, Inc. All rights reserved.
