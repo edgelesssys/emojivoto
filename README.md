@@ -45,10 +45,10 @@ Deploy the application to Minikube using the Edgeless Mesh.
     helm install edg-mesh-coordinator edgeless/coordinator --set global.pullSecret=regcred --set coordinator.resources=null --set coordinator.OE_SIMULATION=1 --set tolerations=null
     ```
 
-1. Pull the configuration and build the manifest
+1. Pull the configuration
 
     ```bash
-    tools/pull_manifest.sh
+    tools/gh-dl-config.sh "edgelesssys/coordinator" latest mesh.config
     ```
 
 1. Get the Coordinator's address and set the DNS

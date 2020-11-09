@@ -3,26 +3,24 @@
 		"web": {
 			"Debug": true,
 			"SecurityVersion": 1,
-			"ProductID": [1]
+			"ProductID": 4,
+			"SignerID": "43361affedeb75affee9baec7e054a5e14883213e5a121b67d74a0e12e9d2b7a"
 		},
 		"emoji-svc": {
 			"Debug": true,
 			"SecurityVersion": 1,
-			"ProductID": [2]
+			"ProductID": 5,
+			"SignerID": "43361affedeb75affee9baec7e054a5e14883213e5a121b67d74a0e12e9d2b7a"
 		},
 		"voting-svc": {
 			"Debug": true,
 			"SecurityVersion": 1,
-			"ProductID": [3]
+			"ProductID": 6,
+			"SignerID": "43361affedeb75affee9baec7e054a5e14883213e5a121b67d74a0e12e9d2b7a"
 		}
 	},
 	"Infrastructures": {
-		"Azure": {
-			"QESVN": 2,
-			"PCESVN": 3,
-			"CPUSVN": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
-			"RootCA": [3,3,3]
-		}
+		"Azure": {}
 	},
 	"Marbles": {
 		"web": {
@@ -33,7 +31,6 @@
 					"TLS_CERT": "$$marble_cert",
 					"TLS_PRIV_KEY": "$$marble_key",
 					"WEB_PORT": "4433",
-					"DOMAIN": "edgeless01.uksouth.cloudapp.azure.com",
 				  	"EMOJISVC_HOST": "emoji-svc.emojivoto:8080",
 				  	"VOTINGSVC_HOST": "voting-svc.emojivoto:8080",
 				  	"INDEX_BUNDLE": "/edg/hostfs/dist/index_bundle.js"

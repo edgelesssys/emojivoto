@@ -17,12 +17,14 @@ COPY --from=pull /emojivoto /emojivoto
 FROM emoji_build AS build_emoji_svc
 WORKDIR /emojivoto/emojivoto-emoji-svc/build
 RUN --mount=type=secret,id=repoaccess,dst=/root/.netrc,required=true \
+    --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-emoji-svc/build/private.pem,required=true \
     cmake .. && \
     GOPRIVATE=github.com/edgelesssys make
 
 FROM emoji_build AS build_voting_svc
 WORKDIR /emojivoto/emojivoto-voting-svc/build
 RUN --mount=type=secret,id=repoaccess,dst=/root/.netrc,required=true \
+    --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-voting-svc/build/private.pem,required=true \
     cmake .. && \
     GOPRIVATE=github.com/edgelesssys make
 
@@ -36,6 +38,7 @@ RUN apt update && \
     apt install -y yarn nodejs
 WORKDIR /emojivoto/emojivoto-web/build
 RUN --mount=type=secret,id=repoaccess,dst=/root/.netrc,required=true \
+    --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-web/build/private.pem,required=true \
     cmake .. && \
     GOPRIVATE=github.com/edgelesssys make
 
