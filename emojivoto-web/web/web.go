@@ -392,7 +392,7 @@ func redirect(w http.ResponseWriter, req *http.Request) {
 		http.StatusTemporaryRedirect)
 }
 
-func StartServer(webPort, domain, webpackDevServer, indexBundle string, emojiServiceClient pb.EmojiServiceClient, votingClient pb.VotingServiceClient, tlsConfig *tls.Config) {
+func StartServer(webPort, webpackDevServer, indexBundle string, emojiServiceClient pb.EmojiServiceClient, votingClient pb.VotingServiceClient, tlsConfig *tls.Config) {
 	webApp := &WebApp{
 		emojiServiceClient:  emojiServiceClient,
 		votingServiceClient: votingClient,

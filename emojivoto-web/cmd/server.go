@@ -19,7 +19,6 @@ import (
 func main() {
 	var (
 		webPort              = os.Getenv("WEB_PORT")
-		domain               = os.Getenv("DOMAIN")
 		emojisvcHost         = os.Getenv("EMOJISVC_HOST")
 		votingsvcHost        = os.Getenv("VOTINGSVC_HOST")
 		indexBundle          = os.Getenv("INDEX_BUNDLE")
@@ -78,7 +77,7 @@ func main() {
 	emojiSvcClient := pb.NewEmojiServiceClient(emojiSvcConn)
 	defer emojiSvcConn.Close()
 
-	web.StartServer(webPort, domain, webpackDevServerHost, indexBundle, emojiSvcClient, votingClient, serverCfg)
+	web.StartServer(webPort, webpackDevServerHost, indexBundle, emojiSvcClient, votingClient, serverCfg)
 }
 
 func openGrpcClientConnection(host string, creds credentials.TransportCredentials) *grpc.ClientConn {
