@@ -3,13 +3,13 @@
 FROM alpine/git:latest AS pull
 RUN --mount=type=secret,id=repoaccess,dst=/root/.netrc,required=true git clone https://github.com/edgelesssys/emojivoto.git /emojivoto
 
-FROM ghcr.io/edgelesssys/edgelessrt-private:deploy AS emoji_base
+FROM ghcr.io/edgelesssys/edgelessrt-deploy AS emoji_base
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl dnsutils iptables jq nghttp2 && \
     apt clean && \
     apt autoclean
 
-FROM ghcr.io/edgelesssys/edgelessrt-private:latest AS emoji_build
+FROM ghcr.io/edgelesssys/edgelessrt-dev AS emoji_build
 RUN go get github.com/golang/protobuf/protoc-gen-go && \
     go get google.golang.org/grpc/cmd/protoc-gen-go-grpc
 COPY --from=pull /emojivoto /emojivoto
