@@ -2,7 +2,7 @@
 
 TOKEN="$(cat ~/.TOKEN)"
 REPO=$1
-FILE="config.json"      # the name of your release asset file, e.g. build.tar.gz
+FILE="coordinator-era.json"      # the name of your release asset file, e.g. build.tar.gz
 VERSION=$2                       # tag name or the word "latest"
 GITHUB="https://api.github.com"
 
@@ -23,7 +23,7 @@ fi;
 
 asset_id=`gh_curl -s $GITHUB/repos/$REPO/releases | jq "$parser"`
 if [ "$asset_id" = "null" ]; then
-  errcho "ERROR: version not found $VERSION"
+  echo "ERROR: version not found $VERSION"
   exit 1
 fi;
 

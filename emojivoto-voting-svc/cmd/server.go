@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/tls"
-	"crypto/x509"
 	"fmt"
 	"log"
 	"net"
@@ -12,10 +11,10 @@ import (
 	"syscall"
 	"time"
 
+	"contrib.go.opencensus.io/exporter/ocagent"
+	"github.com/edgelesssys/emojivoto/edgeless"
 	"github.com/edgelesssys/emojivoto/emojivoto-voting-svc/api"
 	"github.com/edgelesssys/emojivoto/emojivoto-voting-svc/voting"
-
-	"contrib.go.opencensus.io/exporter/ocagent"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opencensus.io/plugin/ocgrpc"
@@ -29,29 +28,17 @@ func main() {
 		grpcPort    = os.Getenv("GRPC_PORT")
 		promPort    = os.Getenv("PROM_PORT")
 		ocagentHost = os.Getenv("OC_AGENT_HOST")
-		tlsCertPem  = os.Getenv("TLS_CERT")
-		privk       = os.Getenv("TLS_PRIV_KEY")
-		rootCA      = os.Getenv("ROOT_CA")
 	)
 
 	if grpcPort == "" {
 		log.Fatalf("GRPC_PORT (currently [%s]) environment variable must me set to run the server.", grpcPort)
 	}
 
-	// create CertPool
-	roots := x509.NewCertPool()
-	if !roots.AppendCertsFromPEM([]byte(rootCA)) {
-		log.Fatalf("cannot append rootCa to CertPool")
-	}
-	// create certificate
-	tlsCert, err := tls.X509KeyPair([]byte(tlsCertPem), []byte(privk))
-	if err != nil {
-		log.Fatalf("cannot create TLS cert: %v", err)
-	}
+	tlsCerts, roots := edgeless.GetCredentials()
 	// create TLS config
 	serverCfg := &tls.Config{
 		ClientCAs:    roots,
-		Certificates: []tls.Certificate{tlsCert},
+		Certificates: tlsCerts,
 		ClientAuth:   tls.RequireAndVerifyClientCert,
 	}
 	// create creds

@@ -412,23 +412,6 @@ func StartServer(webPort, webpackDevServer, indexBundle string, emojiServiceClie
 	// TODO: make static assets dir configurable
 	http.Handle("/dist/", http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
 
-	// certManager := autocert.Manager{
-	// 	Prompt:     autocert.AcceptTOS,
-	// 	HostPolicy: autocert.HostWhitelist(domain),
-	// 	Cache:      autocert.DirCache("/edg/hostfs/certs"),
-	// }
-	// tlsConfig := certManager.TLSConfig()
-	// server := http.Server{
-	// 	Addr:      fmt.Sprintf(":%s", webPort),
-	// 	Handler:   nil,
-	// 	TLSConfig: tlsConfig,
-	// }
-
-	// redirect every http request to https
-	// go http.ListenAndServe(":8080", certManager.HTTPHandler(nil))
-	// go http.ListenAndServe(":8080", http.HandlerFunc(redirect))
-	// server.ListenAndServeTLS("", "")
-
 	server := http.Server{
 		Addr:      fmt.Sprintf(":%s", webPort),
 		Handler:   nil,

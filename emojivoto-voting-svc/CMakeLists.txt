@@ -1,12 +1,7 @@
-# Copyright (c) Edgeless Systems GmbH.
-# Licensed under the MIT License.
-
 cmake_minimum_required(VERSION 3.11)
 
 project(emojivoto_voting_svc)
 find_package(OpenEnclave CONFIG REQUIRED)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
@@ -15,24 +10,17 @@ endif ()
 add_custom_target(voting-svc-servicelib
   ertgo build -buildmode=c-archive
   -o libservice.a
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmd/main.go
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmd/server.go)
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmd)
 
 # Enclave
 add_executable(voting-svc-enclaved enclave/main.c)
 set_target_properties(voting-svc-enclaved PROPERTIES OUTPUT_NAME "enclave")
-target_include_directories(voting-svc-enclaved PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 add_dependencies(voting-svc-enclaved voting-svc-servicelib)
 
 target_link_libraries(voting-svc-enclaved
-  openenclave::ertmeshentry
   openenclave::oeenclave
-  openenclave::oehostepoll
-  openenclave::oehostfs
-  openenclave::oehostsock
-  ${CMAKE_CURRENT_BINARY_DIR}/libservice.a
-  openenclave::ertlibc
-  openenclave::oecustomfs)
+  openenclave::ertmeshentry
+  ${CMAKE_CURRENT_BINARY_DIR}/libservice.a)
 
 # Generate key
 add_custom_command(

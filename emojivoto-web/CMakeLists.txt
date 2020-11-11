@@ -1,12 +1,7 @@
-# Copyright (c) Edgeless Systems GmbH.
-# Licensed under the MIT License.
-
 cmake_minimum_required(VERSION 3.11)
 
 project(emojivoto_web)
 find_package(OpenEnclave CONFIG REQUIRED)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
@@ -15,8 +10,7 @@ endif ()
 add_custom_target(emoji-web-servicelib
   ertgo build -buildmode=c-archive
   -o libservice.a
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmd/main.go
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmd/server.go)
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmd)
 
 add_custom_command(TARGET emoji-web-servicelib
   PRE_BUILD
@@ -32,18 +26,12 @@ add_custom_target(vote-bot ALL
 # Enclave
 add_executable(emoji-web-enclaved enclave/main.c)
 set_target_properties(emoji-web-enclaved PROPERTIES OUTPUT_NAME "enclave")
-target_include_directories(emoji-web-enclaved PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 add_dependencies(emoji-web-enclaved emoji-web-servicelib)
 
 target_link_libraries(emoji-web-enclaved
-  openenclave::ertmeshentry
   openenclave::oeenclave
-  openenclave::oehostepoll
-  openenclave::oehostfs
-  openenclave::oehostsock
-  ${CMAKE_CURRENT_BINARY_DIR}/libservice.a
-  openenclave::ertlibc
-  openenclave::oecustomfs)
+  openenclave::ertmeshentry
+  ${CMAKE_CURRENT_BINARY_DIR}/libservice.a)
 
 # Generate key
 add_custom_command(

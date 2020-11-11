@@ -2,12 +2,12 @@ package main
 
 import (
 	"crypto/tls"
-	"crypto/x509"
 	"log"
 	"os"
 	"time"
 
 	"contrib.go.opencensus.io/exporter/ocagent"
+	"github.com/edgelesssys/emojivoto/edgeless"
 	pb "github.com/edgelesssys/emojivoto/emojivoto-web/gen/proto"
 	"github.com/edgelesssys/emojivoto/emojivoto-web/web"
 	"go.opencensus.io/plugin/ocgrpc"
@@ -24,29 +24,17 @@ func main() {
 		indexBundle          = os.Getenv("INDEX_BUNDLE")
 		webpackDevServerHost = os.Getenv("WEBPACK_DEV_SERVER")
 		ocagentHost          = os.Getenv("OC_AGENT_HOST")
-		tlsCertPem           = os.Getenv("TLS_CERT")
-		privk                = os.Getenv("TLS_PRIV_KEY")
-		rootCA               = os.Getenv("ROOT_CA")
 	)
 
 	if webPort == "" || emojisvcHost == "" || votingsvcHost == "" {
 		log.Fatalf("WEB_PORT (currently [%s]) EMOJISVC_HOST (currently [%s]) and VOTINGSVC_HOST (currently [%s]) INDEX_BUNDLE (currently [%s]) environment variables must me set.", webPort, emojisvcHost, votingsvcHost, indexBundle)
 	}
 
-	// create CertPool
-	roots := x509.NewCertPool()
-	if !roots.AppendCertsFromPEM([]byte(rootCA)) {
-		log.Fatalf("cannot append rootCa to CertPool")
-	}
-	// create certificate
-	tlsCert, err := tls.X509KeyPair([]byte(tlsCertPem), []byte(privk))
-	if err != nil {
-		log.Fatalf("cannot create TLS cert: %v", err)
-	}
+	tlsCerts, roots := edgeless.GetCredentials()
 	// create TLS config
 	serverCfg := &tls.Config{
 		ClientCAs:    roots,
-		Certificates: []tls.Certificate{tlsCert},
+		Certificates: tlsCerts,
 	}
 	// create creds
 	serverCreds := credentials.NewTLS(serverCfg)
@@ -64,7 +52,7 @@ func main() {
 	// create gRPC config
 	clientCfg := &tls.Config{
 		RootCAs:      roots,
-		Certificates: []tls.Certificate{tlsCert},
+		Certificates: tlsCerts,
 	}
 	// create creds
 	clientCreds := credentials.NewTLS(clientCfg)
