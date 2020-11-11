@@ -30,7 +30,7 @@ spec:
       containers:
       - env:
         - name: EDG_COORDINATOR_ADDR
-          value: coordinator-mesh-api.edg-mesh:25554
+          value: coordinator-mesh-api.marblerun:25554
         - name: EDG_MARBLE_TYPE
           value: web
         - name: EDG_MARBLE_DNS_NAMES

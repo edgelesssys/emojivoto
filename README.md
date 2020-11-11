@@ -78,7 +78,7 @@ Deploy the application to Minikube using the Marblerun.
 
     ```bash
     # public repo
-    wget https://github.com/edgelesssys/coordinator/releases/latest/download/coordinator-era.json
+    wget https://github.com/edgelesssys/marblerun/releases/latest/download/coordinator-era.json
     ```
 
 1. Get the Coordinator's address and set the DNS

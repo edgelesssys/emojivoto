@@ -5,8 +5,8 @@ go 1.13
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.0
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
-	github.com/edgelesssys/coordinator v0.0.0-20201015164107-689c0810f2eb
 	github.com/edgelesssys/era v0.0.0-20201009150044-916cb8b147e1 // indirect
+	github.com/edgelesssys/marblerun v0.1.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.4.3
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
@@ -14,7 +14,7 @@ require (
 	github.com/prometheus/client_golang v1.7.1
 	github.com/spf13/afero v1.4.1 // indirect
 	go.opencensus.io v0.22.5
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
 	golang.org/x/net v0.0.0-20201021035429-f5854403a974
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9 // indirect
 	golang.org/x/sys v0.0.0-20201020230747-6e5568b54d1a // indirect
