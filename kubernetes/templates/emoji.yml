@@ -29,7 +29,7 @@ spec:
       serviceAccountName: emoji
       containers:
       - env:
-        - name: EDG_COORDINATOR_ADDR
+        - name: EDG_MARBLE_COORDINATOR_ADDR
           value: coordinator-mesh-api.marblerun:25554
         - name: EDG_MARBLE_TYPE
           value: emoji-svc
