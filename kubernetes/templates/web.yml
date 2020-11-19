@@ -42,7 +42,7 @@ spec:
             configMapKeyRef:
               name: oe-config
               key: OE_SIMULATION
-        image: ghcr.io/edgelesssys/emojivoto-web:v0.1.0
+        image: ghcr.io/edgelesssys/emojivoto/web:v0.1.0
         name: web-svc
         ports:
         - containerPort: 4433
