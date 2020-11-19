@@ -58,8 +58,8 @@ func main() {
 	trace.RegisterExporter(oce)
 	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 
-	webUrl := "https://" + webHost
-	if _, err := url.Parse(webUrl); err != nil {
+	webURL := "https://" + webHost
+	if _, err := url.Parse(webURL); err != nil {
 		log.Fatalf("WEB_HOST %s is invalid", webHost)
 	}
 
