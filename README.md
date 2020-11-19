@@ -39,7 +39,6 @@ Deploy the application to Minikube using the Marblerun.
     ```bash
     helm repo add edgeless https://helm.edgeless.systems/stable
     helm repo update
-    tools/private-repo-setup.sh marblerun
     ```
 
     Update the hostname with your cluster's FQDN or use localhost if you're running on minikube
@@ -50,7 +49,6 @@ Deploy the application to Minikube using the Marblerun.
     helm install marblerun-coordinator edgeless/marblerun-coordinator \
         --create-namespace \
         -n marblerun \
-        --set global.pullSecret=regcred \
         --set coordinator.hostname=mycluster.uksouth.cloudapp.azure.com
     ```
 
@@ -63,7 +61,6 @@ Deploy the application to Minikube using the Marblerun.
         --set coordinator.resources=null \
         --set coordinator.simulation=1 \
         --set tolerations=null \
-        --set global.pullSecret=regcred \
         --set coordinator.hostname=mycluster.uksouth.cloudapp.azure.com
     ```
 
@@ -72,19 +69,13 @@ Deploy the application to Minikube using the Marblerun.
 1. Pull the remote attestation configuration
 
     ```bash
-    # private repo
-    tools/gh-dl-config.sh "edgelesssys/coordinator" latest coordinator-era.json
-    ```
-
-    ```bash
-    # public repo
     wget https://github.com/edgelesssys/marblerun/releases/latest/download/coordinator-era.json
     ```
 
 1. Get the Coordinator's address and set the DNS
 
     * If you're running on AKS:
-        * Check our docs on [how to set the DNS for the Client-API](TODO) 
+        * Check our docs on [how to set the DNS for the Client-API](TODO)
 
             ```bash
             export MARBLERUN=mycluster.uksouth.cloudapp.azure.com
@@ -121,12 +112,6 @@ Deploy the application to Minikube using the Marblerun.
     ```
 
 1. Deploy emojivoto
-
-    Private repo setup:
-
-    ```bash
-    tools/private-repo-setup.sh emojivoto
-    ```
 
     * If you're deploying on a cluster with nodes that support SGX1+FLC (e.g. AKS or minikube + Azure Standard_DC*s)
 
@@ -218,9 +203,9 @@ mkdir -p build && pushd build && cmake .. && make && popd
 Build docker images:
 
 ```bash
-docker buildx build --secret id=repoaccess,src=<path to .netrc> --secret id=signingkey,src=<path to private.pem> --target release_web --tag ghcr.io/edgelesssys/emojivoto-web:latest .
-docker buildx build --secret id=repoaccess,src=<path to .netrc> --secret id=signingkey,src=<path to private.pem> --target release_emoji_svc --tag ghcr.io/edgelesssys/emojivoto-emoji-svc:latest .
-docker buildx build --secret id=repoaccess,src=<path to .netrc> --secret id=signingkey,src=<path to private.pem> --target release_voting_svc --tag ghcr.io/edgelesssys/emojivoto-voting-svc:latest .
+docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_web --tag ghcr.io/edgelesssys/emojivoto-web:latest .
+docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_emoji_svc --tag ghcr.io/edgelesssys/emojivoto-emoji-svc:latest .
+docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_voting_svc --tag ghcr.io/edgelesssys/emojivoto-voting-svc:latest .
 ```
 
 ## License

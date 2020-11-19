@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:experimental
 
 FROM alpine/git:latest AS pull
-RUN --mount=type=secret,id=repoaccess,dst=/root/.netrc,required=true git clone https://github.com/edgelesssys/emojivoto.git /emojivoto
+RUN git clone https://github.com/edgelesssys/emojivoto.git /emojivoto
 
 FROM ghcr.io/edgelesssys/edgelessrt-deploy AS emoji_base
 RUN apt-get update && \
@@ -16,17 +16,15 @@ COPY --from=pull /emojivoto /emojivoto
 
 FROM emoji_build AS build_emoji_svc
 WORKDIR /emojivoto/emojivoto-emoji-svc/build
-RUN --mount=type=secret,id=repoaccess,dst=/root/.netrc,required=true \
-    --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-emoji-svc/build/private.pem,required=true \
+RUN --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-emoji-svc/build/private.pem,required=true \
     cmake .. && \
-    GOPRIVATE=github.com/edgelesssys make
+    make
 
 FROM emoji_build AS build_voting_svc
 WORKDIR /emojivoto/emojivoto-voting-svc/build
-RUN --mount=type=secret,id=repoaccess,dst=/root/.netrc,required=true \
-    --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-voting-svc/build/private.pem,required=true \
+RUN --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-voting-svc/build/private.pem,required=true \
     cmake .. && \
-    GOPRIVATE=github.com/edgelesssys make
+    make
 
 FROM emoji_build AS build_web
 WORKDIR /node
@@ -37,10 +35,9 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
 RUN apt update && \
     apt install -y yarn nodejs
 WORKDIR /emojivoto/emojivoto-web/build
-RUN --mount=type=secret,id=repoaccess,dst=/root/.netrc,required=true \
-    --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-web/build/private.pem,required=true \
+RUN --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-web/build/private.pem,required=true \
     cmake .. && \
-    GOPRIVATE=github.com/edgelesssys make
+    make
 
 FROM emoji_base AS release_emoji_svc
 LABEL description="emoji-svc"
