@@ -181,16 +181,15 @@ The following tasks are performed by the script:
 1. Connect to your Azure Subscription ID
 1. Optionally create the cluster
 1. Retrieve the cluster credentials
-1. Create a Marblerun deployment
-1. Create an NIGNX-Ingress-Controller deployment
-1. Associate domain names with the public IPs
-    * marblerun.cluster-domain -> Marblerun Client API
-    * emojivoto.cluster-domain -> NIGNX-Ingress-Controller
+1. Optionally install linkerd
+1. Install Marblerun
+1. Install an NGINX-Ingress-Controller
+1. Associate domain names with LoadBalancer public IPs
+    * marblerun-xxx.cluster-domain -> Marblerun Client API
+    * emojivoto-xxx.cluster-domain -> NGINX-Ingress-Controller
 1. Create an emojivoto deployment
-1. Create an ingress resource to forward traffic
-    * https://emojivoto.cluster-domain -> emojivoto web portal
-
-Browse to https://emojivoto.cluster-domain
+1. Create an ingress resource to forward traffic via HTTPS-SNI
+    * https://emojivoto-xxx.cluster-domain -> emojivoto
 
 Uninstall with:
 ```bash
