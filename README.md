@@ -74,19 +74,10 @@ Deploy the application to Minikube using the Marblerun.
 
 1. Get the Coordinator's address and set the DNS
 
-    * If you're running on AKS:
-        * Check our docs on [how to set the DNS for the Client-API](TODO)
-
-            ```bash
-            export MARBLERUN=mycluster.uksouth.cloudapp.azure.com
-            ```
-
-    * If you're running on minikube
-
-        ```bash
-        kubectl -n marblerun port-forward svc/coordinator-client-api 25555:25555 --address localhost >/dev/null &
-        export MARBLERUN=localhost:25555
-        ```
+    ```bash
+    kubectl -n marblerun port-forward svc/coordinator-client-api 25555:25555 --address localhost >/dev/null &
+    export MARBLERUN=localhost:25555
+    ```
 
 1. Install the Edgeless Remote Attestation Tool
     1. Check [requirements](https://github.com/edgelesssys/era#requirements)
@@ -117,12 +108,16 @@ Deploy the application to Minikube using the Marblerun.
 
     ```bash
     helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
+    # You can set the web-svc certificate's CommonName via
+    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto --set hosts="<cluster-domain>"
     ```
 
     * Otherwise
 
     ```bash
     helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
+    # You can set the web-svc certificate's CommonName via
+    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto --set hosts="<cluster-domain>"
     ```
 
     You can check with `kubectl get pods -n emojivoto` that all pods is running.
@@ -145,21 +140,16 @@ Deploy the application to Minikube using the Marblerun.
     ```
 
 1. Use the app!
-    * If you're running on AKS
-        * You need to expose the `web-svc` in the `emojivoto` namespace. This works similar to [how we expose the client-API](TODO)
-        * Get the public IP with: `kubectl -n emojivoto get svc web-svc -o wide`
-        * If you're using ingress/gateway-controllers make sure you enable [SNI-passthrough](TODO)
-    * If you're running on minikube
 
-        ```bash
-        sudo kubectl -n emojivoto port-forward svc/web-svc 443:443 --address 0.0.0.0
-        ```
+    ```bash
+    sudo kubectl -n emojivoto port-forward svc/web-svc 443:443 --address 0.0.0.0
+    ```
 
-    * Browse to [https://localhost](https://localhost) or https://emojivoto-hostname:port depending on your type of deployment.
+    * Browse to [https://localhost](https://localhost).
     * Notes on DNS: If you're running emojivoto on a remote machine you can add the machine's DNS name to the emojivoto certificate (e.g. `emojivoto.example.org`):
         * Open the `kubernetes/sgx_values.yaml` or `kubernetes/nosgx_values.yaml` file depending on your type of deployment
         * Add your DNS name to the `hosts` field:
-            * `hosts: "emojivoto.example.org,localhost,web-svc,web-svc.emojivoto,web-svc.emojivoto.svc.cluster.local"`
+            * `hosts: "emojivoto.example.org"`
         * You need to apply your changes with:
             * If you're using `kubernetes/sgx_values.yaml` for your deployment:
 
@@ -172,6 +162,40 @@ Deploy the application to Minikube using the Marblerun.
                 ```bash
                 helm upgrade -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes -n emojivoto
                 ```
+
+### In AKS
+
+We have provided a [script](tools/deploy_on_aks.sh) to deploy emojivoto in an AKS cluster:
+
+```bash
+tools/aks_install.sh <az_subscription_id> <az_resource_name> <az_cluster_name> <nodes> <cluster-domain>
+# Example
+tools/aks_install 00112233-04455-6677-8899-aabbccddeeff emoji emojivoto 5 uksouth.cloudapp.azure.com
+```
+
+The script requires the [bash Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) to be installed.
+Further you need to be [logged in](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli) to your Azure account.
+
+The following tasks are performed by the script:
+
+1. Connect to your Azure Subscription ID
+1. Optionally create the cluster
+1. Retrieve the cluster credentials
+1. Optionally install linkerd
+1. Install Marblerun
+1. Install an NGINX-Ingress-Controller
+1. Associate domain names with LoadBalancer public IPs
+    * marblerun-xxx.cluster-domain -> Marblerun Client API
+    * emojivoto-xxx.cluster-domain -> NGINX-Ingress-Controller
+1. Create an emojivoto deployment
+1. Create an ingress resource to forward traffic via HTTPS-SNI
+    * https://emojivoto-xxx.cluster-domain -> emojivoto
+
+Uninstall with:
+```bash
+tools/aks_uninstall.sh <az_resource_name> <az_cluster_name>
+```
+
 
 ### Generating some traffic
 

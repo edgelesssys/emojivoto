@@ -5,4 +5,4 @@ simulation:
   OE_SIMULATION: "1"
 
 # add your host to the list
-hosts: "localhost,web-svc,web-svc.emojivoto,web-svc.emojivoto.svc.cluster.local"
+hosts: "localhost"
