@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"fmt"
 	"log"
 	"net"
@@ -12,9 +11,9 @@ import (
 	"time"
 
 	"contrib.go.opencensus.io/exporter/ocagent"
-	"github.com/edgelesssys/emojivoto/edgeless"
 	"github.com/edgelesssys/emojivoto/emojivoto-emoji-svc/api"
 	"github.com/edgelesssys/emojivoto/emojivoto-emoji-svc/emoji"
+	"github.com/edgelesssys/ertgolib/marble"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opencensus.io/plugin/ocgrpc"
@@ -34,12 +33,10 @@ func main() {
 		log.Fatalf("GRPC_PORT (currently [%s]) environment variable must me set to run the server.", grpcPort)
 	}
 
-	tlsCerts, roots := edgeless.GetCredentials()
-	// create TLS config
-	serverCfg := &tls.Config{
-		ClientCAs:    roots,
-		Certificates: tlsCerts,
-		ClientAuth:   tls.RequireAndVerifyClientCert,
+	// get TLS config
+	serverCfg, err := marble.GetServerTLSConfig()
+	if err != nil {
+		log.Fatalf("Failed to retrieve server TLS config from ertgolib")
 	}
 	// create creds
 	serverCreds := credentials.NewTLS(serverCfg)
