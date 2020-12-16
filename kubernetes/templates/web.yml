@@ -34,7 +34,7 @@ spec:
         - name: EDG_MARBLE_TYPE
           value: web
         - name: EDG_MARBLE_DNS_NAMES
-          value: "{{ .Values.web.hosts }},web-svc,web-svc.emojivoto,web-svc.emojivoto.svc.cluster.local"
+          value: "web-svc,web-svc.emojivoto,web-svc.emojivoto.svc.cluster.local"
         - name: EDG_MARBLE_UUID_FILE
           value: "/web-svc/data/uuid"
         - name: OE_SIMULATION

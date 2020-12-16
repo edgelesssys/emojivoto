@@ -7,8 +7,6 @@ simulation:
 web:
   image: ghcr.io/edgelesssys/emojivoto/web
   imageVersion: v0.2.0
-  # add your host to the list
-  hosts: "localhost"
 
 emoji:
   image: ghcr.io/edgelesssys/emojivoto/emoji-svc

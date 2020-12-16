@@ -102,6 +102,13 @@ Deploy the application to Minikube using the Marblerun.
     curl --cacert marblerun.crt --data-binary @tools/manifest.json https://$MARBLERUN/manifest
     ```
 
+    * If you're running emojivoto on a custom domain, you can set the certificates CN accordingly
+
+    ```bash
+    manifest=$(cat "tools/manifest.json" | sed "s/localhost/<your-domain>/g")
+    curl --cacert marblerun.crt --data-binary "$manifest" https://$MARBLERUN/manifest
+    ```
+
 1. Deploy emojivoto
 
     * If you're deploying on a cluster with nodes that support SGX1+FLC (e.g. AKS or minikube + Azure Standard_DC*s)
@@ -109,7 +116,7 @@ Deploy the application to Minikube using the Marblerun.
     ```bash
     helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
     # You can set the web-svc certificate's CommonName via
-    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto --set web.hosts="<cluster-domain>"
+    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto"
     ```
 
     * Otherwise
@@ -117,7 +124,7 @@ Deploy the application to Minikube using the Marblerun.
     ```bash
     helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
     # You can set the web-svc certificate's CommonName via
-    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto --set web.hosts="<cluster-domain>"
+    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto"
     ```
 
     You can check with `kubectl get pods -n emojivoto` that all pods is running.
@@ -146,22 +153,7 @@ Deploy the application to Minikube using the Marblerun.
     ```
 
     * Browse to [https://localhost](https://localhost).
-    * Notes on DNS: If you're running emojivoto on a remote machine you can add the machine's DNS name to the emojivoto certificate (e.g. `emojivoto.example.org`):
-        * Open the `kubernetes/sgx_values.yaml` or `kubernetes/nosgx_values.yaml` file depending on your type of deployment
-        * Add your DNS name to the `web.hosts` field:
-            * `hosts: "emojivoto.example.org"`
-        * You need to apply your changes with:
-            * If you're using `kubernetes/sgx_values.yaml` for your deployment:
-
-                ```bash
-                helm upgrade -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes -n emojivoto
-                ```
-
-            * Otherwise:
-
-                ```bash
-                helm upgrade -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes -n emojivoto
-                ```
+    * If your running on a custom domain browse to https://<your-domain>
 
 ### In AKS
 
