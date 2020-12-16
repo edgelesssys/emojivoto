@@ -34,7 +34,7 @@ spec:
         - name: EDG_MARBLE_TYPE
           value: web
         - name: EDG_MARBLE_DNS_NAMES
-          value: "{{ .Values.hosts }},web-svc,web-svc.emojivoto,web-svc.emojivoto.svc.cluster.local"
+          value: "{{ .Values.web.hosts }},web-svc,web-svc.emojivoto,web-svc.emojivoto.svc.cluster.local"
         - name: EDG_MARBLE_UUID_FILE
           value: "/web-svc/data/uuid"
         - name: OE_SIMULATION
@@ -42,7 +42,7 @@ spec:
             configMapKeyRef:
               name: oe-config
               key: OE_SIMULATION
-        image: ghcr.io/edgelesssys/emojivoto/web:v0.1.0
+        image: {{ .Values.web.image }}:{{ .Values.web.imageVersion }}
         name: web-svc
         ports:
         - containerPort: 4433

@@ -171,6 +171,7 @@ echo -e "[$okStatus] Done"
 
 # set manifest
 echo "[*] Setting the manifest"
+rm -f coordinator-era.json
 wget -q https://github.com/edgelesssys/marblerun/releases/latest/download/coordinator-era.json
 era -c coordinator-era.json -h $MARBLERUN -o marblerun.crt > /dev/null
 curl --fail --silent --show-error --cacert marblerun.crt --data-binary @tools/manifest.json https://$MARBLERUN/manifest
@@ -185,7 +186,7 @@ then
 fi
 helm install emojivoto ./kubernetes \
     -f ./kubernetes/sgx_values.yaml \
-    --set hosts="$EMOJIVOTO" \
+    --set web.hosts="$EMOJIVOTO" \
     -n emojivoto > /dev/null
 echo -e "[$okStatus] Done"
 

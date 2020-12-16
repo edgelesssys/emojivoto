@@ -42,7 +42,7 @@ spec:
             configMapKeyRef:
               name: oe-config
               key: OE_SIMULATION
-        image: ghcr.io/edgelesssys/emojivoto/voting-svc:v0.1.0
+        image: {{ .Values.voting.image }}:{{ .Values.voting.imageVersion }}
         name: voting-svc
         ports:
         - containerPort: 8080
