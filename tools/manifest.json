@@ -27,9 +27,6 @@
 			"Package": "web",
 			"Parameters": {
 				"Env": {
-					"ROOT_CA": "$$root_ca",
-					"TLS_CERT": "$$marble_cert",
-					"TLS_PRIV_KEY": "$$marble_key",
 					"WEB_PORT": "4433",
 				  	"EMOJISVC_HOST": "emoji-svc.emojivoto:8080",
 				  	"VOTINGSVC_HOST": "voting-svc.emojivoto:8080",
@@ -41,9 +38,6 @@
 			"Package": "emoji-svc",
 			"Parameters": {
 				"Env": {
-					"ROOT_CA": "$$root_ca",
-					"TLS_CERT": "$$marble_cert",
-					"TLS_PRIV_KEY": "$$marble_key",
 					"GRPC_PORT": "8080",
 					"PROM_PORT": "8801",
 					"OC_AGENT_HOST": "oc-collector.tracing:55678"
@@ -54,9 +48,6 @@
 			"Package": "voting-svc",
 			"Parameters": {
 				"Env": {
-					"ROOT_CA": "$$root_ca",
-					"TLS_CERT": "$$marble_cert",
-					"TLS_PRIV_KEY": "$$marble_key",
 					"GRPC_PORT": "8080",
 					"PROM_PORT": "8801",
 					"OC_AGENT_HOST": "oc-collector.tracing:55678"
