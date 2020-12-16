@@ -1,6 +1,8 @@
 imagePullSecrets:
   - name: regcred
 
+imagePullPolicy: IfNotPresent
+
 simulation:
   OE_SIMULATION: "1"
 

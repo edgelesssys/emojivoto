@@ -43,6 +43,7 @@ spec:
               name: oe-config
               key: OE_SIMULATION
         image: {{ .Values.web.image }}:{{ .Values.web.imageVersion }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: web-svc
         ports:
         - containerPort: 4433

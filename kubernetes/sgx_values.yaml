@@ -1,6 +1,8 @@
 imagePullSecrets:
   - name: regcred
 
+imagePullPolicy: IfNotPresent
+
 resources:
   requests:
     cpu: 100m
@@ -26,3 +28,4 @@ emoji:
 voting:
   image: ghcr.io/edgelesssys/emojivoto/voting-svc
   imageVersion: v0.2.0
+

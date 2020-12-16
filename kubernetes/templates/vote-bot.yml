@@ -26,6 +26,7 @@ spec:
         - name: WEB_HOST
           value: web-svc:443
         image: {{ .Values.web.image }}:{{ .Values.web.imageVersion }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: vote-bot
         resources:
           requests:

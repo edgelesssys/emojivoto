@@ -43,6 +43,7 @@ spec:
               name: oe-config
               key: OE_SIMULATION
         image: {{ .Values.voting.image }}:{{ .Values.voting.imageVersion }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: voting-svc
         ports:
         - containerPort: 8080
