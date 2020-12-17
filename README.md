@@ -115,16 +115,12 @@ Deploy the application to Minikube using the Marblerun.
 
     ```bash
     helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
-    # You can set the web-svc certificate's CommonName via
-    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto"
     ```
 
     * Otherwise
 
     ```bash
     helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
-    # You can set the web-svc certificate's CommonName via
-    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto"
     ```
 
     You can check with `kubectl get pods -n emojivoto` that all pods is running.
@@ -145,6 +141,14 @@ Deploy the application to Minikube using the Marblerun.
     ```bash
     tools/check_manifest.sh tools/manifest.json
     ```
+
+    * If you're running with a custom domain
+
+    ```
+    echo -n $manifest > /tmp/manifest
+    tools/check_manifest.sh tmp/manifest.json
+    ```
+
 
 1. Use the app!
 
@@ -219,9 +223,9 @@ mkdir -p build && pushd build && cmake .. && make && popd
 Build docker images:
 
 ```bash
-docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_web --tag ghcr.io/edgelesssys/emojivoto-web:latest .
-docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_emoji_svc --tag ghcr.io/edgelesssys/emojivoto-emoji-svc:latest .
-docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_voting_svc --tag ghcr.io/edgelesssys/emojivoto-voting-svc:latest .
+docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_web --tag ghcr.io/edgelesssys/emojivoto/web:latest .
+docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_emoji_svc --tag ghcr.io/edgelesssys/emojivoto/emoji-svc:latest .
+docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_voting_svc --tag ghcr.io/edgelesssys/emojivoto/voting-svc:latest .
 ```
 
 ## License
