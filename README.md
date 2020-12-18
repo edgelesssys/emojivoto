@@ -223,9 +223,9 @@ mkdir -p build && pushd build && cmake .. && make && popd
 Build docker images:
 
 ```bash
-docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_web --tag ghcr.io/edgelesssys/emojivoto/web:latest .
-docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_emoji_svc --tag ghcr.io/edgelesssys/emojivoto/emoji-svc:latest .
-docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_voting_svc --tag ghcr.io/edgelesssys/emojivoto/voting-svc:latest .
+docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_web --tag ghcr.io/edgelesssys/emojivoto/web:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
+docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_emoji_svc --tag ghcr.io/edgelesssys/emojivoto/emoji-svc:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
+docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_voting_svc --tag ghcr.io/edgelesssys/emojivoto/voting-svc:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
 ```
 
 ## License
