@@ -66,10 +66,9 @@
 			"Size": 256,
 			"Type": "cert-ecdsa",
 			"Cert": {
-				"SerialNumber": 1337,
 				"Subject": {
-					"SerialNumber": "1337",
-					"CommonName": "localhost"
+					"CommonName": "localhost",
+					"DNSNames": ["localhost"]
 				}
 			},
 			"ValidFor": 7
