@@ -25,7 +25,8 @@ spec:
         env:
         - name: WEB_HOST
           value: web-svc:443
-        image: ghcr.io/edgelesssys/emojivoto/web:v0.1.0
+        image: {{ .Values.web.image }}:{{ .Values.web.imageVersion }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: vote-bot
         resources:
           requests:

@@ -42,7 +42,8 @@ spec:
             configMapKeyRef:
               name: oe-config
               key: OE_SIMULATION
-        image: ghcr.io/edgelesssys/emojivoto/emoji-svc:v0.1.0
+        image: {{ .Values.emoji.image }}:{{ .Values.emoji.imageVersion }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: emoji-svc
         ports:
         - containerPort: 8080

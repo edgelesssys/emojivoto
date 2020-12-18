@@ -171,9 +171,11 @@ echo -e "[$okStatus] Done"
 
 # set manifest
 echo "[*] Setting the manifest"
+rm -f coordinator-era.json
 wget -q https://github.com/edgelesssys/marblerun/releases/latest/download/coordinator-era.json
 era -c coordinator-era.json -h $MARBLERUN -o marblerun.crt > /dev/null
-curl --fail --silent --show-error --cacert marblerun.crt --data-binary @tools/manifest.json https://$MARBLERUN/manifest
+manifest=$(sed 's/localhost/$EMOJIVOTO/g' tools/manifest.json)
+curl --fail --silent --show-error --cacert marblerun.crt --data-binary "$manifest" https://$MARBLERUN/manifest
 echo -e "[$okStatus] Done"
 
 # install emojivoto
@@ -185,7 +187,6 @@ then
 fi
 helm install emojivoto ./kubernetes \
     -f ./kubernetes/sgx_values.yaml \
-    --set hosts="$EMOJIVOTO" \
     -n emojivoto > /dev/null
 echo -e "[$okStatus] Done"
 
@@ -203,7 +204,7 @@ echo -e "[$okStatus] Done"
 
 # set ingress for emojivoto
 echo "[*] Setting ingress route for emojivoto"
-template=$(cat "tools/emojivoto_ingress.yaml.template" | sed "s/{{DOMAIN}}/$EMOJIVOTO/g")
+template=$(sed "s/{{DOMAIN}}/$EMOJIVOTO/g" tools/emojivoto_ingress.yaml.template)
 echo "$template" | kubectl -n emojivoto apply -f - > /dev/null
 echo -e "[$okStatus] Done"
 

@@ -28,6 +28,8 @@
 			"Parameters": {
 				"Env": {
 					"WEB_PORT": "4433",
+					"WEB_CERT": "{{ pem .Secrets.web_cert_shared.Cert }}",
+					"WEB_CERT_KEY": "{{ pem .Secrets.web_cert_shared.Private }}",
 				  	"EMOJISVC_HOST": "emoji-svc.emojivoto:8080",
 				  	"VOTINGSVC_HOST": "voting-svc.emojivoto:8080",
 				  	"INDEX_BUNDLE": "/edg/hostfs/dist/index_bundle.js"
@@ -57,5 +59,19 @@
 	},
 	"Clients": {
 		"owner": [9,9,9]
+	},
+	"Secrets": {
+		"web_cert_shared": {
+			"Shared": true,
+			"Size": 256,
+			"Type": "cert-ecdsa",
+			"Cert": {
+				"Subject": {
+					"CommonName": "localhost",
+					"DNSNames": ["localhost"]
+				}
+			},
+			"ValidFor": 7
+		}
 	}
 }

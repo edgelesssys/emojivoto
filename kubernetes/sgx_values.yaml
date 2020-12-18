@@ -1,6 +1,8 @@
 imagePullSecrets:
   - name: regcred
 
+imagePullPolicy: IfNotPresent
+
 resources:
   requests:
     cpu: 100m
@@ -15,6 +17,15 @@ effect: NoSchedule
 simulation:
   OE_SIMULATION: "0"
 
-# add your host to the list
-hosts: "localhost"
+web:
+  image: ghcr.io/edgelesssys/emojivoto/web
+  imageVersion: v0.2.0
+
+emoji:
+  image: ghcr.io/edgelesssys/emojivoto/emoji-svc
+  imageVersion: v0.2.0
+
+voting:
+  image: ghcr.io/edgelesssys/emojivoto/voting-svc
+  imageVersion: v0.2.0
 
