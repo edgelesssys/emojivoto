@@ -102,10 +102,10 @@ Deploy the application to Minikube using the Marblerun.
     curl --cacert marblerun.crt --data-binary @tools/manifest.json https://$MARBLERUN/manifest
     ```
 
-    * If you're running emojivoto on a custom domain, you can set the certificates CN accordingly
+    * If you're running emojivoto on a custom domain, you can set the certificate's CN accordingly
 
     ```bash
-    manifest=$(cat "tools/manifest.json" | sed "s/localhost/<your-domain>/g")
+    manifest=$(sed 's/localhost/<your-domain>/g' tools/manifest.json)
     curl --cacert marblerun.crt --data-binary "$manifest" https://$MARBLERUN/manifest
     ```
 
@@ -145,8 +145,8 @@ Deploy the application to Minikube using the Marblerun.
     * If you're running with a custom domain
 
     ```
-    echo -n $manifest > /tmp/manifest
-    tools/check_manifest.sh tmp/manifest.json
+    echo -n $manifest > /tmp/manifest.json
+    tools/check_manifest.sh /tmp/manifest.json
     ```
 
 
