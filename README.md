@@ -2,7 +2,7 @@
 
 A microservice application that allows users to vote for their favorite emoji,
 and tracks votes received on a leaderboard. May the best emoji win.
-The application is a fork of [linkerd's emojivoto](https://github.com/BuoyantIO/emojivoto) refactored as a confidential computing application.
+The application is a fork of [Linkerd's emojivoto](https://github.com/BuoyantIO/emojivoto) refactored as a confidential computing application.
 
 The application is composed of the following 3 services:
 
