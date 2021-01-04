@@ -31,7 +31,7 @@ func main() {
 	}
 
 	// get TLS config
-	tlsCfg, err := marble.GetServerTLSConfig()
+	tlsCfg, err := marble.GetTLSConfig(true)
 	if err != nil {
 		log.Fatalf("Failed to retrieve server TLS config from ertgolib")
 	}
@@ -50,9 +50,9 @@ func main() {
 	trace.RegisterExporter(oce)
 
 	// get gRPC config
-	clientCfg, err := marble.GetClientTLSConfig()
+	clientCfg, err := marble.GetTLSConfig(false)
 	if err != nil {
-		log.Fatalf("Failed to retrieve client TLS config from ertgolib")
+		log.Fatalf("Failed to retrieve gRPC TLS config from ertgolib")
 	}
 	// create creds
 	clientCreds := credentials.NewTLS(clientCfg)

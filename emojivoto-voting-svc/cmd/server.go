@@ -33,7 +33,7 @@ func main() {
 		log.Fatalf("GRPC_PORT (currently [%s]) environment variable must me set to run the server.", grpcPort)
 	}
 	// get TLS config
-	serverCfg, err := marble.GetServerTLSConfig()
+	serverCfg, err := marble.GetTLSConfig(true)
 	if err != nil {
 		log.Fatalf("Failed to retrieve server TLS config from ertgolib")
 	}

@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// get TLS config
-	serverCfg, err := marble.GetServerTLSConfig()
+	serverCfg, err := marble.GetTLSConfig(true)
 	if err != nil {
 		log.Fatalf("Failed to retrieve server TLS config from ertgolib")
 	}
