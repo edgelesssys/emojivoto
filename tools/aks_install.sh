@@ -105,6 +105,7 @@ fi
 
 # install ingress controller
 echo "[*] Installing nginx-ingress-controller..."
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx > /dev/null
 helm install --namespace kube-system --set rbac.create=true --set controller.stats.enabled=true --set controller.extraArgs.enable-ssl-passthrough=""  --set controller.replicaCount=2 --set controller.nodeSelector."beta\.kubernetes\.io/os"=linux  --set defaultBackend.nodeSelector."beta\.kubernetes\.io/os"=linux nginx-ingress ingress-nginx/ingress-nginx > /dev/null
 echo -e "[$okStatus] Done"
 
@@ -115,6 +116,7 @@ if [ "$LINKERD" = true ]
 then
     kubectl annotate ns marblerun linkerd.io/inject=enabled > /dev/null
 fi
+helm repo add edgeless https://helm.edgeless.systems/stable > /dev/null
 helm install marblerun-coordinator edgeless/marblerun-coordinator -n marblerun --set coordinator.hostname="$MARBLERUN_DNSNAME.$DOMAIN" > /dev/null
 echo -e "[$okStatus] Done"
 
