@@ -1,18 +1,10 @@
 #!/usr/bin/env bash
-
-if ! command -v az &> /dev/null
-then
-    echo "Azure CLI could not be found"
-    echo "See Installation Guide @ https://docs.microsoft.com/en-us/cli/azure/install-azure-cli"
-    exit
-fi
-
-
 if [ $# -lt 5 ];
 then
     echo "Usage: $0 <az subscriptionID> <az resource group> <az cluster name> <az cluster #nodes> <domain>"
     exit 1
 fi
+
 
 SUBSCRIPTIONID=$1
 RESOURCEGROUP=$2
@@ -30,6 +22,62 @@ failStatus="\e[91m\u00D7\e[0m"
 
 # exit if command fails
 set -e
+
+
+
+#
+# 0. prerequisite
+#
+echo "[*] Checking prerequisite"
+
+if ! command -v az &> /dev/null
+then
+    echo "[$failStatus] Azure CLI could not be found"
+    echo "See Installation Guide @ https://docs.microsoft.com/en-us/cli/azure/install-azure-cli"
+    echo "See https://docs.microsoft.com/en-us/azure/confidential-computing/confidential-nodes-aks-get-started#installing-the-cli-pre-requisites"
+    exit
+fi
+
+if ! command -v era &> /dev/null
+then
+    echo "[$failStatus] era could not be found"
+    echo "See Installation Guide https://github.com/edgelesssys/era#install"
+    exit
+fi
+
+if ! command -v helm &> /dev/null
+then
+    echo "[$failStatus] helm could not be found"
+    echo "See Installation Guide https://helm.sh/docs/intro/install/"
+    exit
+fi
+
+if ! command -v curl &> /dev/null
+then
+    echo "[$failStatus] 'curl' could not be found"
+    exit
+fi
+
+if ! command -v wget &> /dev/null
+then
+    echo "[$failStatus] 'wget' could not be found"
+    exit
+fi
+
+# Check if linkerd should be deployed
+read -p "Do you want to deploy with linkerd? (y/n) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    if ! command -v linkerd &> /dev/null
+    then
+        echo "[$failStatus] linkerd CLI could not be found"
+        echo "See Installation Guide @ https://linkerd.io/2/getting-started/"
+        exit
+    fi
+    LINKERD=true
+fi
+
 
 #
 # 1. Azure
@@ -68,18 +116,8 @@ echo -e "[$okStatus] Done"
 #
 
 # Check if linkerd should be deployed
-read -p "Do you want to deploy with linkerd? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]
+if [ "$LINKERD" = true ]
 then
-    if ! command -v linkerd &> /dev/null
-    then
-        echo "linkerd CLI could not be found"
-        echo "See Installation Guide @ https://linkerd.io/2/getting-started/"
-        exit
-    fi
-    LINKERD=true
-
     linkerd_execute() {
         eval $@ >/dev/null 2>/tmp/linkerd_output
         if [ $? -eq 0 ]; then
@@ -96,7 +134,6 @@ then
     linkerd_execute "linkerd check --pre"
     linkerd_execute "linkerd install | kubectl apply -f -"
     linkerd_execute "linkerd check"
-
 fi
 
 #
