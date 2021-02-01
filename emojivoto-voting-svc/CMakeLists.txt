@@ -7,38 +7,24 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif ()
 
-add_custom_target(voting-svc-servicelib
-  ertgo build -buildmode=c-archive
-  -o libservice.a
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmd)
-
-# Enclave
-add_executable(voting-svc-enclaved enclave/main.c)
-set_target_properties(voting-svc-enclaved PROPERTIES OUTPUT_NAME "enclave")
-add_dependencies(voting-svc-enclaved voting-svc-servicelib)
-
-target_link_libraries(voting-svc-enclaved
-  openenclave::oeenclave
-  openenclave::ertmeshentry
-  ${CMAKE_CURRENT_BINARY_DIR}/libservice.a)
-
 # Generate key
 add_custom_command(
   OUTPUT private.pem public.pem
   COMMAND openssl genrsa -out private.pem -3 3072
   COMMAND openssl rsa -in private.pem -pubout -out public.pem)
 
-# Sign enclave
+# Build & Sign enclave
 add_custom_command(
-  OUTPUT enclave.signed
-  DEPENDS voting-svc-enclaved enclave/enclave.conf private.pem
-  COMMAND openenclave::oesign sign -e $<TARGET_FILE:voting-svc-enclaved> -c
-          ${CMAKE_CURRENT_SOURCE_DIR}/enclave/enclave.conf -k private.pem)
-add_custom_target(voting-svc-sign ALL DEPENDS enclave.signed)
+  OUTPUT voting-svc
+  DEPENDS enclave/enclave.json private.pem
+  COMMAND ego-go build -o voting-svc ${CMAKE_CURRENT_SOURCE_DIR}/cmd
+  COMMAND ego sign ${CMAKE_CURRENT_SOURCE_DIR}/enclave/enclave.json
+)
+add_custom_target(voting-svc-sign ALL)
 
 # Create config for remote attestation
 add_custom_command(
   OUTPUT config.json
-  DEPENDS enclave.signed
-  COMMAND openenclave::oesign eradump -e ${CMAKE_CURRENT_BINARY_DIR}/enclave.signed > ${CMAKE_CURRENT_BINARY_DIR}/config.json)
+  DEPENDS voting-svc
+  COMMAND openenclave::oesign eradump -e ${CMAKE_CURRENT_BINARY_DIR}/voting-svc > ${CMAKE_CURRENT_BINARY_DIR}/config.json)
 add_custom_target(voting-svc-config ALL DEPENDS config.json)

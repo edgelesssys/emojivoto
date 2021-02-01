@@ -1,15 +1,15 @@
 # syntax=docker/dockerfile:experimental
 
 FROM alpine/git:latest AS pull
-RUN git clone https://github.com/edgelesssys/emojivoto.git /emojivoto
+RUN git clone -b ref/ego https://github.com/edgelesssys/emojivoto.git /emojivoto
 
-FROM ghcr.io/edgelesssys/edgelessrt-deploy AS emoji_base
+FROM ghcr.io/edgelesssys/edgelessrt-deploy:nightly AS emoji_base
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl dnsutils iptables jq nghttp2 && \
     apt clean && \
     apt autoclean
 
-FROM ghcr.io/edgelesssys/edgelessrt-dev AS emoji_build
+FROM ghcr.io/edgelesssys/edgelessrt-dev:nightly AS emoji_build
 RUN go get github.com/golang/protobuf/protoc-gen-go && \
     go get google.golang.org/grpc/cmd/protoc-gen-go-grpc
 COPY --from=pull /emojivoto /emojivoto
@@ -41,18 +41,18 @@ RUN --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-web/build/private
 
 FROM emoji_base AS release_emoji_svc
 LABEL description="emoji-svc"
-COPY --from=build_emoji_svc /emojivoto/emojivoto-emoji-svc/build/enclave.signed /enclave.signed
-ENTRYPOINT ["erthost", "/enclave.signed"]
+COPY --from=build_emoji_svc /emojivoto/emojivoto-emoji-svc/build/emoji-svc /emoji-svc
+ENTRYPOINT ["ego", "marblerun", "/emoji-svc"]
 
 FROM emoji_base AS release_voting_svc
 LABEL description="voting-svc"
-COPY --from=build_voting_svc /emojivoto/emojivoto-voting-svc/build/enclave.signed /enclave.signed
-ENTRYPOINT ["erthost", "/enclave.signed"]
+COPY --from=build_voting_svc /emojivoto/emojivoto-voting-svc/build/voting-svc /voting-svc
+ENTRYPOINT ["ego", "marblerun", "/voting-svc"]
 
 FROM emoji_base AS release_web
 LABEL description="emoji-web"
-COPY --from=build_web /emojivoto/emojivoto-web/build/enclave.signed /enclave.signed
+COPY --from=build_web /emojivoto/emojivoto-web/build/emoji-web /emoji-web
 COPY --from=build_web /emojivoto/emojivoto-web/build/web /web
 COPY --from=build_web /emojivoto/emojivoto-web/build/dist /dist
 COPY --from=build_web /emojivoto/emojivoto-web/build/emojivoto-vote-bot /emojivoto-vote-bot
-ENTRYPOINT ["erthost", "/enclave.signed"]
+ENTRYPOINT ["ego", "marblerun", "/emoji-web"]

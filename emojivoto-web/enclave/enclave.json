@@ -1,0 +1,8 @@
+{
+    "Exe": "emoji-web",
+    "Key": "private.pem",
+    "Debug": true,
+    "Heapsize": 1024,
+    "ProductID": 4,
+    "SecurityVersion": 1
+}
