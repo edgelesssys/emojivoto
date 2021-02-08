@@ -16,16 +16,16 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-func main() {
-	var (
-		webPort              = os.Getenv("WEB_PORT")
-		emojisvcHost         = os.Getenv("EMOJISVC_HOST")
-		votingsvcHost        = os.Getenv("VOTINGSVC_HOST")
-		indexBundle          = os.Getenv("INDEX_BUNDLE")
-		webpackDevServerHost = os.Getenv("WEBPACK_DEV_SERVER")
-		ocagentHost          = os.Getenv("OC_AGENT_HOST")
-	)
+var (
+	webPort              = os.Getenv("WEB_PORT")
+	emojisvcHost         = os.Getenv("EMOJISVC_HOST")
+	votingsvcHost        = os.Getenv("VOTINGSVC_HOST")
+	indexBundle          = os.Getenv("INDEX_BUNDLE")
+	webpackDevServerHost = os.Getenv("WEBPACK_DEV_SERVER")
+	ocagentHost          = os.Getenv("OC_AGENT_HOST")
+)
 
+func main() {
 	if webPort == "" || emojisvcHost == "" || votingsvcHost == "" {
 		log.Fatalf("WEB_PORT (currently [%s]) EMOJISVC_HOST (currently [%s]) and VOTINGSVC_HOST (currently [%s]) INDEX_BUNDLE (currently [%s]) environment variables must me set.", webPort, emojisvcHost, votingsvcHost, indexBundle)
 	}

@@ -1,8 +1,8 @@
 {
-    "Exe": "voting-svc",
+    "Exe": "target/emojivoto-voting-svc",
     "Key": "private.pem",
     "Debug": true,
-    "Heapsize": 1024,
+    "Heapsize": 512,
     "ProductID": 6,
     "SecurityVersion": 1
 }

@@ -12,7 +12,7 @@ The application is composed of the following 3 services:
 
 Confidential emojivoto is build as a confidential computing application:
 
-* Each service runs in a confidential enclave using [EdgelessRT](https://github.com/edgelesssys/edgelessrt)
+* Each service runs in a confidential enclave using [EGo](https://ego.dev)
 * The application is distributed, configured, and connected using [Marblerun](https://github.com/edgelesssys/marblerun)
 
 ![Emojivoto Topology](assets/emojivoto-topology.gif "Emojivoto Topology")
@@ -213,9 +213,11 @@ go run emojivoto-web/cmd/vote-bot/main.go
 
 ## Build
 
+Build with [EGo](https://ego.dev):
+
 ```bash
 tools/install-dependencies.sh
-mkdir -p build && pushd build && cmake .. && make && popd
+ego env make build
 ```
 
 ## Docker

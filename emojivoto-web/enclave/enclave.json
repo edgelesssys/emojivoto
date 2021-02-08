@@ -1,8 +1,8 @@
 {
-    "Exe": "emoji-web",
+    "Exe": "target/emojivoto-web",
     "Key": "private.pem",
     "Debug": true,
-    "Heapsize": 1024,
+    "Heapsize": 512,
     "ProductID": 4,
     "SecurityVersion": 1
 }
