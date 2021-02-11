@@ -22,13 +22,13 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-func main() {
-	var (
-		grpcPort    = os.Getenv("GRPC_PORT")
-		promPort    = os.Getenv("PROM_PORT")
-		ocagentHost = os.Getenv("OC_AGENT_HOST")
-	)
+var (
+	grpcPort    = os.Getenv("GRPC_PORT")
+	promPort    = os.Getenv("PROM_PORT")
+	ocagentHost = os.Getenv("OC_AGENT_HOST")
+)
 
+func main() {
 	if grpcPort == "" {
 		log.Fatalf("GRPC_PORT (currently [%s]) environment variable must me set to run the server.", grpcPort)
 	}

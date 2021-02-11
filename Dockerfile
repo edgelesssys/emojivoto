@@ -3,30 +3,15 @@
 FROM alpine/git:latest AS pull
 RUN git clone https://github.com/edgelesssys/emojivoto.git /emojivoto
 
-FROM ghcr.io/edgelesssys/edgelessrt-deploy AS emoji_base
+FROM ghcr.io/edgelesssys/ego-deploy:nightly AS emoji_base
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl dnsutils iptables jq nghttp2 && \
     apt clean && \
     apt autoclean
 
-FROM ghcr.io/edgelesssys/edgelessrt-dev AS emoji_build
+FROM ghcr.io/edgelesssys/ego-dev:nightly AS emoji_build
 RUN go get github.com/golang/protobuf/protoc-gen-go && \
     go get google.golang.org/grpc/cmd/protoc-gen-go-grpc
-COPY --from=pull /emojivoto /emojivoto
-
-FROM emoji_build AS build_emoji_svc
-WORKDIR /emojivoto/emojivoto-emoji-svc/build
-RUN --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-emoji-svc/build/private.pem,required=true \
-    cmake .. && \
-    make
-
-FROM emoji_build AS build_voting_svc
-WORKDIR /emojivoto/emojivoto-voting-svc/build
-RUN --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-voting-svc/build/private.pem,required=true \
-    cmake .. && \
-    make
-
-FROM emoji_build AS build_web
 WORKDIR /node
 RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh && \
     bash nodesource_setup.sh
@@ -34,25 +19,28 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 RUN apt update && \
     apt install -y yarn nodejs
-WORKDIR /emojivoto/emojivoto-web/build
-RUN --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-web/build/private.pem,required=true \
-    cmake .. && \
-    make
+COPY --from=pull /emojivoto /emojivoto
+WORKDIR /emojivoto
+RUN --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-web/private.pem,required=true \
+    --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-emoji-svc/private.pem,required=true \
+    --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-voting-svc/private.pem,required=true \
+    ego env make build
+
 
 FROM emoji_base AS release_emoji_svc
-LABEL description="emoji-svc"
-COPY --from=build_emoji_svc /emojivoto/emojivoto-emoji-svc/build/enclave.signed /enclave.signed
-ENTRYPOINT ["erthost", "/enclave.signed"]
+LABEL description="/emojivoto-emoji-svc"
+COPY --from=emoji_build /emojivoto/emojivoto-emoji-svc/target/emojivoto-emoji-svc /emojivoto-emoji-svc
+ENTRYPOINT ["ego", "marblerun", "/emojivoto-emoji-svc"]
 
 FROM emoji_base AS release_voting_svc
-LABEL description="voting-svc"
-COPY --from=build_voting_svc /emojivoto/emojivoto-voting-svc/build/enclave.signed /enclave.signed
-ENTRYPOINT ["erthost", "/enclave.signed"]
+LABEL description="emojivoto-voting-svc"
+COPY --from=emoji_build /emojivoto/emojivoto-voting-svc/target/emojivoto-voting-svc /emojivoto-voting-svc
+ENTRYPOINT ["ego", "marblerun", "/emojivoto-voting-svc"]
 
 FROM emoji_base AS release_web
-LABEL description="emoji-web"
-COPY --from=build_web /emojivoto/emojivoto-web/build/enclave.signed /enclave.signed
-COPY --from=build_web /emojivoto/emojivoto-web/build/web /web
-COPY --from=build_web /emojivoto/emojivoto-web/build/dist /dist
-COPY --from=build_web /emojivoto/emojivoto-web/build/emojivoto-vote-bot /emojivoto-vote-bot
-ENTRYPOINT ["erthost", "/enclave.signed"]
+LABEL description="emojivoto-web"
+COPY --from=emoji_build /emojivoto/emojivoto-web/target/emojivoto-web /emojivoto-web
+COPY --from=emoji_build /emojivoto/emojivoto-web/target/web /web
+COPY --from=emoji_build /emojivoto/emojivoto-web/target/dist /dist
+COPY --from=emoji_build /emojivoto/emojivoto-web/target/emojivoto-vote-bot /emojivoto-vote-bot
+ENTRYPOINT ["ego", "marblerun", "/emojivoto-web"]
