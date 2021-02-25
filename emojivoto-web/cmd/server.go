@@ -23,7 +23,7 @@ var (
 	indexBundle          = os.Getenv("INDEX_BUNDLE")
 	webpackDevServerHost = os.Getenv("WEBPACK_DEV_SERVER")
 	ocagentHost          = os.Getenv("OC_AGENT_HOST")
-	tlsServer            = os.Getenv("TLS_SERVER")
+	tlsServer            = os.Getenv("EDG_TLS_SERVER")
 )
 
 func main() {
