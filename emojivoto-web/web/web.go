@@ -423,3 +423,34 @@ func StartServer(webPort, webpackDevServer, indexBundle string, emojiServiceClie
 		panic(err)
 	}
 }
+
+func StartServerNoTLS(webPort, webpackDevServer, indexBundle string, emojiServiceClient pb.EmojiServiceClient, votingClient pb.VotingServiceClient) {
+	webApp := &WebApp{
+		emojiServiceClient:  emojiServiceClient,
+		votingServiceClient: votingClient,
+		indexBundle:         indexBundle,
+		webpackDevServer:    webpackDevServer,
+	}
+
+	log.Printf("Starting web server on WEB_PORT=[%s]", webPort)
+	handle("/", webApp.indexHandler)
+	handle("/leaderboard", webApp.indexHandler)
+	handle("/js", webApp.jsHandler)
+	handle("/img/favicon.ico", webApp.faviconHandler)
+	handle("/api/list", webApp.listEmojiHandler)
+	handle("/api/vote", webApp.voteEmojiHandler)
+	handle("/api/leaderboard", webApp.leaderboardHandler)
+
+	// TODO: make static assets dir configurable
+	http.Handle("/dist/", http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
+
+	server := http.Server{
+		Addr:    fmt.Sprintf(":%s", webPort),
+		Handler: nil,
+	}
+
+	err := server.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
+}

@@ -42,6 +42,8 @@ spec:
             configMapKeyRef:
               name: oe-config
               key: OE_SIMULATION
+        - name: TLS_SERVER
+          value: {{ .Values.web.tlsServer }}
         image: {{ .Values.web.image }}:{{ .Values.web.imageVersion }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: web-svc
