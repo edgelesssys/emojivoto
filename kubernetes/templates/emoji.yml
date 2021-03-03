@@ -25,18 +25,11 @@ spec:
       labels:
         app: emoji-svc
         version: v1
+        marblerun/marbletype: emoji-svc
     spec:
       serviceAccountName: emoji
       containers:
       - env:
-        - name: EDG_MARBLE_COORDINATOR_ADDR
-          value: coordinator-mesh-api.marblerun:25554
-        - name: EDG_MARBLE_TYPE
-          value: emoji-svc
-        - name: EDG_MARBLE_DNS_NAMES
-          value: "emoji-svc,emoji-svc.emojivoto,emoji-svc.emojivoto.svc.cluster.local"
-        - name: EDG_MARBLE_UUID_FILE
-          value: "/emoji-svc/data/uuid"
         - name: OE_SIMULATION
           valueFrom:
             configMapKeyRef:
@@ -57,10 +50,6 @@ spec:
           mountPath: /emoji-svc/data
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
   volumeClaimTemplates:

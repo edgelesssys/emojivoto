@@ -25,18 +25,11 @@ spec:
       labels:
         app: web-svc
         version: v1
+        marblerun/marbletype: web
     spec:
       serviceAccountName: web
       containers:
       - env:
-        - name: EDG_MARBLE_COORDINATOR_ADDR
-          value: coordinator-mesh-api.marblerun:25554
-        - name: EDG_MARBLE_TYPE
-          value: web
-        - name: EDG_MARBLE_DNS_NAMES
-          value: "web-svc,web-svc.emojivoto,web-svc.emojivoto.svc.cluster.local"
-        - name: EDG_MARBLE_UUID_FILE
-          value: "/web-svc/data/uuid"
         - name: OE_SIMULATION
           valueFrom:
             configMapKeyRef:
@@ -59,10 +52,6 @@ spec:
           mountPath: /web-svc/data
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
   volumeClaimTemplates:
