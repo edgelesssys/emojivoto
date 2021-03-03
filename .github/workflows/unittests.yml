@@ -1,0 +1,63 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+    container:
+      image: ghcr.io/edgelesssys/ego-dev:nightly
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build
+      run: |
+        tools/install-dependencies.sh
+        ego env make build
+
+    - name: Deploy web:nightly
+      if: github.ref == 'refs/heads/develop' &&
+          github.event_name == 'push'
+      run: |
+        curl -X POST -H "Accept: application/vnd.github.v3+json" \
+        -H "Authorization: token ${{ secrets.CI_GITHUB_REPOSITORY }}" \
+        -d '{"event_type": "docker-build",
+            "client_payload":{"repository":"emojivoto",
+                              "sign":"nightly",
+                              "imagename":"web",
+                              "tag":"nightly",
+                              "target":"release_web"}}' \
+        https://api.github.com/repos/edgelesssys/deployment/dispatches
+
+    - name: Deploy emoji-svc:nightly
+      if: github.ref == 'refs/heads/develop' &&
+          github.event_name == 'push'
+      run: |
+        curl -X POST -H "Accept: application/vnd.github.v3+json" \
+        -H "Authorization: token ${{ secrets.CI_GITHUB_REPOSITORY }}" \
+        -d '{"event_type": "docker-build",
+            "client_payload":{"repository":"emojivoto",
+                              "sign":"nightly",
+                              "imagename":"emoji-svc",
+                              "tag":"nightly",
+                              "target":"release_emoji_svc"}}' \
+        https://api.github.com/repos/edgelesssys/deployment/dispatches
+
+    - name: Deploy voting-svc:nightly
+      if: github.ref == 'refs/heads/develop' &&
+          github.event_name == 'push'
+      run: |
+        curl -X POST -H "Accept: application/vnd.github.v3+json" \
+        -H "Authorization: token ${{ secrets.CI_GITHUB_REPOSITORY }}" \
+        -d '{"event_type": "docker-build",
+            "client_payload":{"repository":"emojivoto",
+                              "sign":"nightly",
+                              "imagename":"voting-svc",
+                              "tag":"nightly",
+                              "target":"release_voting_svc"}}' \
+        https://api.github.com/repos/edgelesssys/deployment/dispatches
