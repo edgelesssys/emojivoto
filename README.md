@@ -34,43 +34,23 @@ Deploy the application to Minikube using the Marblerun.
 
 1. Install Marblerun
 
-    Deploy with [helm](https://helm.sh/docs/intro/install/)
-
-    ```bash
-    helm repo add edgeless https://helm.edgeless.systems/stable
-    helm repo update
-    ```
+    Deploy with [Marblerun CLI](https://marblerun.sh/docs/getting-started/cli/)
 
     Update the hostname with your cluster's FQDN or use localhost if you're running on minikube
 
     * If you're deploying on a cluster with nodes that support SGX1+FLC (e.g. AKS or minikube + Azure Standard_DC*s)
 
     ```bash
-    helm install marblerun-coordinator edgeless/marblerun-coordinator \
-        --create-namespace \
-        -n marblerun \
-        --set coordinator.hostname=mycluster.uksouth.cloudapp.azure.com
+    marblerun install --domain=mycluster.uksouth.cloudapp.azure.com
     ```
 
     * Otherwise
 
     ```bash
-    helm install marblerun-coordinator edgeless/marblerun-coordinator \
-        --create-namespace \
-        -n marblerun \
-        --set coordinator.resources=null \
-        --set coordinator.simulation=1 \
-        --set tolerations=null \
-        --set coordinator.hostname=mycluster.uksouth.cloudapp.azure.com
+    marblerun install --domain=mycluster.uksouth.cloudapp.azure.com --simulation
     ```
 
     You can check with `kubectl get pods -n marblerun` that the Coordinator is running.
-
-1. Pull the remote attestation configuration
-
-    ```bash
-    wget https://github.com/edgelesssys/marblerun/releases/latest/download/coordinator-era.json
-    ```
 
 1. Get the Coordinator's address and set the DNS
 
@@ -79,37 +59,41 @@ Deploy the application to Minikube using the Marblerun.
     export MARBLERUN=localhost:25555
     ```
 
-1. Install the Edgeless Remote Attestation Tool
-    1. Check [requirements](https://github.com/edgelesssys/era#requirements)
-    2. See [install](https://github.com/edgelesssys/era#install)
-
 1. Verify the Quote and get the Coordinator's Root-Certificate
     * If you're running on a cluster with nodes that support SGX1+FLC
 
         ```bash
-        era -c coordinator-era.json -h $MARBLERUN -o marblerun.crt
+        marblerun certificate root $MARBLERUN -o marblerun.crt
         ```
 
     * Otherwise
 
         ```bash
-        era -skip-quote -c coordinator-era.json -h $MARBLERUN -o marblerun.crt
+        marblerun certificate root $MARBLERUN -o marblerun.crt --insecure
         ```
 
 1. Set the manifest
 
-    ```bash
-    curl --cacert marblerun.crt --data-binary @tools/manifest.json https://$MARBLERUN/manifest
-    ```
+    * If you're running on a cluster with nodes that support SGX1+FLC
+
+        ```bash
+        marblerun manifest set tools/manifest.json $MARBLERUN
+        ```
+
+    * Otherwise
+
+        ```bash
+        marblerun manifest set tools/manifest.json $MARBLERUN --insecure
+        ```
 
     * If you're running emojivoto on a custom domain, you can set the certificate's CN accordingly
 
     ```bash
-    manifest=$(sed 's/localhost/<your-domain>/g' tools/manifest.json)
-    curl --cacert marblerun.crt --data-binary "$manifest" https://$MARBLERUN/manifest
+    cat "tools/manifest.json" | sed "s/localhost/<your-domain>/g" > /tmp/manifest.json
+    marblerun manifest set /tmp/manifest.json $MARBLERUN
     ```
 
-1. Deploy emojivoto
+1. Deploy emojivoto using [helm](https://helm.sh/docs/intro/install/)
 
     * If you're deploying on a cluster with nodes that support SGX1+FLC (e.g. AKS or minikube + Azure Standard_DC*s)
 
@@ -145,7 +129,6 @@ Deploy the application to Minikube using the Marblerun.
     * If you're running with a custom domain
 
     ```
-    echo -n $manifest > /tmp/manifest.json
     tools/check_manifest.sh /tmp/manifest.json
     ```
 
