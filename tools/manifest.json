@@ -34,7 +34,10 @@
 				  	"VOTINGSVC_HOST": "voting-svc.emojivoto:8080",
 				  	"INDEX_BUNDLE": "/edg/hostfs/dist/index_bundle.js"
 				}
-			}
+			},
+			"TLS": [
+				"web"
+			]
 		},
 		"emoji-svc": {
 			"Package": "emoji-svc",
@@ -44,7 +47,10 @@
 					"PROM_PORT": "8801",
 					"OC_AGENT_HOST": "oc-collector.tracing:55678"
 				}
-			}
+			},
+			"TLS": [
+				"svc"
+			]
 		},
 		"voting-svc": {
 			"Package": "voting-svc",
@@ -54,7 +60,12 @@
 					"PROM_PORT": "8801",
 					"OC_AGENT_HOST": "oc-collector.tracing:55678"
 				}
-			}
+			},
+			"TLS": [
+				"svc",
+				"example",
+				"comment: can be just one, but also a list that will be merged for this marble"
+			]
 		}
 	},
 	"Clients": {
@@ -72,6 +83,31 @@
 				}
 			},
 			"ValidFor": 7
+		}
+	},
+	"TLS": {
+		"web": {
+			"InternalClient": [
+				"emoji-svc.emojivoto:8080",
+				"voting-svc.emojivoto:8080"
+			],
+			"ExternalServer": {
+				"4433": {
+					"_comment": "TBD; cert, privk etc."
+				}
+			}
+		},
+		"svc": {
+			"InternalServer": [
+				"8080"
+			]
+		},
+		"example": {
+			"ExternalClient": {
+				"example.com:443": {
+					"_comment": "TBD; rootca, client cert etc."
+				}
+			}
 		}
 	}
 }
