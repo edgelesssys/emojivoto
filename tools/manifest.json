@@ -28,8 +28,6 @@
 			"Parameters": {
 				"Env": {
 					"WEB_PORT": "4433",
-					"WEB_CERT": "{{ pem .Secrets.web_cert_shared.Cert }}",
-					"WEB_CERT_KEY": "{{ pem .Secrets.web_cert_shared.Private }}",
 				  	"EMOJISVC_HOST": "emoji-svc.emojivoto:8080",
 				  	"VOTINGSVC_HOST": "voting-svc.emojivoto:8080",
 				  	"INDEX_BUNDLE": "/edg/hostfs/dist/index_bundle.js"
@@ -87,27 +85,40 @@
 	},
 	"TLS": {
 		"web": {
-			"InternalClient": [
-				"emoji-svc.emojivoto:8080",
-				"voting-svc.emojivoto:8080"
-			],
-			"ExternalServer": {
-				"4433": {
-					"_comment": "TBD; cert, privk etc."
+			"Outgoing": [
+				{
+					"Port": "8080",
+					"Addr": "emoji-svc.emojivoto"
+				},
+				{
+					"Port": "8080",
+					"Addr": "voting-svc.emojivoto"
 				}
-			}
+			],
+			"Incoming": [
+				{
+					"Port": "4443",
+					"Addr": "*",
+					"Cert": "web_cert_shared"
+				}
+			]
 		},
 		"svc": {
-			"InternalServer": [
-				"8080"
+			"Incoming": [
+				{
+					"Port": "8080",
+					"Addr": "*"
+				}
 			]
 		},
 		"example": {
-			"ExternalClient": {
-				"example.com:443": {
-					"_comment": "TBD; rootca, client cert etc."
+			"Outgoing": [
+				{
+					"Port": "443",
+					"Addr": "example.com",
+					"_comment": "TBD; rootca, client cert etc.; not supported in first iteration; does it even make sense to have transparent external outgoing connections?"
 				}
-			}
+			]
 		}
 	}
 }
