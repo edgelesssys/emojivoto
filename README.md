@@ -93,18 +93,38 @@ Deploy the application to Minikube using the Marblerun.
     marblerun manifest set /tmp/manifest.json $MARBLERUN
     ```
 
+1. Create and annotate emojivoto namespace for auto-injection
+
+    * Create namespace
+
+    ```bash
+    kubectl create namespace emojivoto
+    ```
+
+    * Annotate namespace on a cluster with nodes that support SGX1+FLC
+
+        ```bash
+        marblerun namespace add emojivoto
+        ```
+
+    * Otherwise
+
+        ```bash
+        marblerun namespace add emojivoto --no-sgx-injection
+        ```
+
 1. Deploy emojivoto using [helm](https://helm.sh/docs/intro/install/)
 
     * If you're deploying on a cluster with nodes that support SGX1+FLC (e.g. AKS or minikube + Azure Standard_DC*s)
 
     ```bash
-    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
+    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes -n emojivoto
     ```
 
     * Otherwise
 
     ```bash
-    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
+    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes -n emojivoto
     ```
 
     You can check with `kubectl get pods -n emojivoto` that all pods is running.
