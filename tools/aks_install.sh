@@ -38,6 +38,13 @@ then
     exit
 fi
 
+if ! command -v marblerun &> /dev/null
+then
+    echo "[$failStatus] Marblerun CLI could not be found"
+    echo "See Installation Guide @ https://marblerun.sh/docs/getting-started/cli"
+    exit
+fi
+
 if ! command -v era &> /dev/null
 then
     echo "[$failStatus] era could not be found"
@@ -154,7 +161,7 @@ then
     kubectl annotate ns marblerun linkerd.io/inject=enabled > /dev/null
 fi
 helm repo add edgeless https://helm.edgeless.systems/stable > /dev/null
-helm install marblerun-coordinator edgeless/marblerun-coordinator -n marblerun --set coordinator.hostname="$MARBLERUN_DNSNAME.$DOMAIN" > /dev/null
+marblerun install --domain "$MARBLERUN_DNSNAME.$DOMAIN"
 echo -e "[$okStatus] Done"
 
 
@@ -210,16 +217,15 @@ echo -e "[$okStatus] Done"
 
 # set manifest
 echo "[*] Setting the manifest"
-rm -f coordinator-era.json
-wget -q https://github.com/edgelesssys/marblerun/releases/latest/download/coordinator-era.json
-era -c coordinator-era.json -h $MARBLERUN -o marblerun.crt > /dev/null
 manifest=$(sed 's/localhost/$EMOJIVOTO/g' tools/manifest.json)
-curl --fail --silent --show-error --cacert marblerun.crt --data-binary "$manifest" https://$MARBLERUN/manifest
+echo "$manifest" >> /tmp/manifest.json
+marblerun manifest set /tmp/manifest.json
 echo -e "[$okStatus] Done"
 
 # install emojivoto
 echo "[*] Installing emojivoto"
 kubectl create ns emojivoto > /dev/null
+marblerun namespace add emojivoto
 if [ "$LINKERD" = true ]
 then
     kubectl annotate ns emojivoto linkerd.io/inject=enabled > /dev/null
