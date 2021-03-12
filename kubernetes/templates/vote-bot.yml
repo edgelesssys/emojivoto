@@ -18,7 +18,6 @@ spec:
       labels:
         app: vote-bot
         version: v1
-        marblerun/marbletype: vote-bot
     spec:
       containers:
       - command:
