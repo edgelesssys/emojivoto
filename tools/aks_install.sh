@@ -217,9 +217,9 @@ echo -e "[$okStatus] Done"
 
 # set manifest
 echo "[*] Setting the manifest"
-manifest=$(sed 's/localhost/$EMOJIVOTO/g' tools/manifest.json)
-echo "$manifest" >> /tmp/manifest.json
-marblerun manifest set /tmp/manifest.json
+manifest=$(sed "s/localhost/$EMOJIVOTO/g" tools/manifest.json)
+echo "$manifest" > /tmp/manifest.json
+marblerun manifest set /tmp/manifest.json $MARBLERUN
 echo -e "[$okStatus] Done"
 
 # install emojivoto

@@ -1,7 +1,7 @@
 imagePullSecrets:
   - name: regcred
 
-imagePullPolicy: IfNotPresent
+imagePullPolicy: Always
 
 resources:
   requests:
