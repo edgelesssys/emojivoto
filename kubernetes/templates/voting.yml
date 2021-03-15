@@ -25,18 +25,11 @@ spec:
       labels:
         app: voting-svc
         version: v1
+        marblerun/marbletype: voting-svc
     spec:
       serviceAccountName: voting
       containers:
       - env:
-        - name: EDG_MARBLE_COORDINATOR_ADDR
-          value: coordinator-mesh-api.marblerun:25554
-        - name: EDG_MARBLE_TYPE
-          value: voting-svc
-        - name: EDG_MARBLE_DNS_NAMES
-          value: "voting-svc,voting-svc.emojivoto,voting-svc.emojivoto.svc.cluster.local"
-        - name: EDG_MARBLE_UUID_FILE
-          value: "/voting-svc/data/uuid"
         - name: OE_SIMULATION
           valueFrom:
             configMapKeyRef:
@@ -57,10 +50,6 @@ spec:
           mountPath: /voting-svc/data
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
   volumeClaimTemplates:

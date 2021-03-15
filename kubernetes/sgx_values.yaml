@@ -1,18 +1,11 @@
 imagePullSecrets:
   - name: regcred
 
-imagePullPolicy: IfNotPresent
+imagePullPolicy: Always
 
 resources:
   requests:
     cpu: 100m
-  limits:
-    kubernetes.azure.com/sgx_epc_mem_in_MiB: 10
-
-tolerations:
-- key: kubernetes.azure.com/sgx_epc_mem_in_MiB
-operator: Exists
-effect: NoSchedule
 
 simulation:
   OE_SIMULATION: "0"

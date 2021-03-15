@@ -13,7 +13,7 @@ import (
 	"contrib.go.opencensus.io/exporter/ocagent"
 	"github.com/edgelesssys/emojivoto/emojivoto-emoji-svc/api"
 	"github.com/edgelesssys/emojivoto/emojivoto-emoji-svc/emoji"
-	"github.com/edgelesssys/ertgolib/marble"
+	"github.com/edgelesssys/ego/marble"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opencensus.io/plugin/ocgrpc"
@@ -36,7 +36,7 @@ func main() {
 	// get TLS config
 	serverCfg, err := marble.GetTLSConfig(true)
 	if err != nil {
-		log.Fatalf("Failed to retrieve server TLS config from ertgolib")
+		log.Fatalf("Failed to retrieve server TLS config from ego")
 	}
 	// create creds
 	serverCreds := credentials.NewTLS(serverCfg)
