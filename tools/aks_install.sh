@@ -180,7 +180,7 @@ az network public-ip update --ids $PUBLICIPID --dns-name "$MARBLERUN_DNSNAME" > 
 MARBLERUN=""
 until [[ $MARBLERUN == "$MARBLERUN_DNSNAME."* ]]
 do
-    MARBLERUN="$(az network public-ip show --ids $PUBLICIPID --query "[dnsSettings.fqdn]" --output tsv):25555"
+    MARBLERUN="$(az network public-ip show --ids $PUBLICIPID --query "[dnsSettings.fqdn]" --output tsv):4433"
     echo -n "."
     sleep 3
 done
