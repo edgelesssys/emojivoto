@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-if [ $# -lt 1 ];
+if [ $# -lt 2 ];
 then
-    echo "Usage: $0 <domain>"
+    echo "Usage: $0 <azure resourceGroup> <azure clusterName>"
     exit 1
 fi
 
-
-DOMAIN=$1
+RESOURCEGROUP=$1
+CLUSTERNAME=$2
 
 UNIQUE_SUFFIX="$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 16 | head -n 1)"
 MARBLERUN_DNSNAME="marblerun-$UNIQUE_SUFFIX"
@@ -81,6 +81,13 @@ then
     LINKERD=true
 fi
 
+
+# Get cluster info
+REGION=$(az aks show --resource-group $RESOURCEGROUP --name $CLUSTERNAME --query location)
+temp="${REGION%\"}"
+REGION="${temp#\"}"
+DOMAIN="$REGION.cloudapp.azure.com"
+az aks get-credentials --resource-group "$RESOURCEGROUP" --name "$CLUSTERNAME"
 
 #
 # 1. linkerd
