@@ -1,16 +1,12 @@
 #!/usr/bin/env bash
-if [ $# -lt 5 ];
+if [ $# -lt 1 ];
 then
-    echo "Usage: $0 <az subscriptionID> <az resource group> <az cluster name> <az cluster #nodes> <domain>"
+    echo "Usage: $0 <domain>"
     exit 1
 fi
 
 
-SUBSCRIPTIONID=$1
-RESOURCEGROUP=$2
-CLUSTERNAME=$3
-NODES=$4
-DOMAIN=$5
+DOMAIN=$1
 
 UNIQUE_SUFFIX="$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 16 | head -n 1)"
 MARBLERUN_DNSNAME="marblerun-$UNIQUE_SUFFIX"
@@ -87,39 +83,7 @@ fi
 
 
 #
-# 1. Azure
-#
-
-# set azure account
-echo "[*] Setting Azure subscription..."
-az account set --subscription "$SUBSCRIPTIONID" > /dev/null
-
-read -p "Do you want to create the cluster \"$CLUSTERNAME\"? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]
-then
-    # create cluster
-    echo "Creating cluster..."
-    az aks create \
-        --resource-group "$RESOURCEGROUP" \
-        --name "$CLUSTERNAME" \
-        --node-vm-size Standard_DC2s_v2 \
-        --node-count "$NODES" \
-        --enable-addon confcom \
-        --network-plugin azure \
-        --vm-set-type VirtualMachineScaleSets \
-        --aks-custom-headers usegen2vm=true > /dev/null
-    echo -e "[$okStatus] Done"
-fi
-
-# get cluster credentials
-echo "[*] Getting aks credentials"
-az aks get-credentials --resource-group "$RESOURCEGROUP" --name "$CLUSTERNAME"
-echo -e "[$okStatus] Done"
-
-
-#
-# 2. linkerd
+# 1. linkerd
 #
 
 # Check if linkerd should be deployed
@@ -144,7 +108,7 @@ then
 fi
 
 #
-# 3. Deploy Marblerun+DNS and Ingress-Controller+DNS
+# 2. Deploy Marblerun+DNS and Ingress-Controller+DNS
 #
 
 # install ingress controller
@@ -212,7 +176,7 @@ echo -e "[$okStatus] Done"
 
 
 #
-# 4. Deploy emojivoto
+# 3. Deploy emojivoto
 #
 
 # set manifest
@@ -254,7 +218,7 @@ echo "$template" | kubectl -n emojivoto apply -f - > /dev/null
 echo -e "[$okStatus] Done"
 
 #
-# 5. Finish
+# 4. Finish
 #
 
 echo -e "[$okStatus] All done and ready to roll!🚀"
