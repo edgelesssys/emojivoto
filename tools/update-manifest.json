@@ -1,0 +1,7 @@
+{
+    "Packages": {
+        "web": {
+			"SecurityVersion": 2
+        }
+    }
+}
