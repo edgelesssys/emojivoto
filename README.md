@@ -164,12 +164,12 @@ Deploy the application to Minikube using the Marblerun.
 
 ### In AKS
 
-We have provided a [script](tools/deploy_on_aks.sh) to deploy emojivoto in an AKS cluster:
+We have provided a [script](tools/aks_install.sh) to deploy emojivoto in an AKS cluster:
 
 ```bash
-tools/aks_install.sh <az_subscription_id> <az_resource_name> <az_cluster_name> <nodes> <cluster-domain>
+tools/aks_install.sh <azure resourceGroup> <azure clusterName>
 # Example
-tools/aks_install 00112233-04455-6677-8899-aabbccddeeff emoji emojivoto 5 uksouth.cloudapp.azure.com
+tools/aks_install edgeless emojivoto
 ```
 
 The script requires the [bash Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) to be installed.
@@ -177,9 +177,6 @@ Further you need to be [logged in](https://docs.microsoft.com/en-us/cli/azure/au
 
 The following tasks are performed by the script:
 
-1. Connect to your Azure Subscription ID
-1. Optionally create the cluster
-1. Retrieve the cluster credentials
 1. Optionally install linkerd
 1. Install Marblerun
 1. Install an NGINX-Ingress-Controller
@@ -192,7 +189,7 @@ The following tasks are performed by the script:
 
 Uninstall with:
 ```bash
-tools/aks_uninstall.sh <az_resource_name> <az_cluster_name>
+tools/aks_uninstall.sh
 ```
 
 
