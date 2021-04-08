@@ -74,10 +74,6 @@
 			"ValidFor": 7
 		}
 	},
-	"Admins": {
-		"emojivoto-admin": "YOUR-CERTIFICATE-HERE"
-	},
-	"RecoveryKeys": {
-		"recoveryKey1": "YOUR-KEY-HERE"
-	}
+	"Admins": {},
+	"RecoveryKeys": {}
 }

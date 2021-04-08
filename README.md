@@ -72,11 +72,15 @@ Deploy the application to Minikube using the Marblerun.
         marblerun certificate root $MARBLERUN -o marblerun.crt --insecure
         ```
 
-1. Create an Admin key and certificate
+1. (Optional) Create an admin key and certificate
     
-    To make changes to emojivoto after it has been deployed we need to authenticate ourselves to the Coordinator as someone who is allowed to do so.
-    
-    For this we set an Admin certificate in the Marblerun manifest.
+    To verify that your deployment has not been altered, the Manifest is usually set in stone after it was set to ensure no one can alter with your cluster.
+
+    Yet, updates play an important role to ensure your software stays secure. To avoid having to redeploy your application from scratch, Marblerun allows uploading a separate [“Update Manifest”](https://www.marblerun.sh/docs/tasks/update-manifest) which increases the minimum SecurityVersion of one or multiple already deployed packages.
+
+    In order to deploy an "Update Manifest",  you need to be in possession of a certificate/private key pair which has been defined in the `Admins` section of the original Manifest
+
+    For this, we set an admin certificate in the Marblerun manifest.
 
     Generate certificate and key:
 
@@ -99,7 +103,7 @@ Deploy the application to Minikube using the Marblerun.
     //...
     ```
 
-1. Create a Recovery key
+1. (Optional) Create a recovery key
 
     As described in the [Marblerun docs](https://www.marblerun.sh/docs/features/recovery/) some cases require manual intervention to restart the Coordinator on a different host.
 
@@ -216,84 +220,88 @@ Deploy the application to Minikube using the Marblerun.
     * Browse to [https://localhost](https://localhost).
     * If your running on a custom domain browse to https://\<your-domain\>
 
-1. Update emojivoto
+1. (Optional) Update emojivoto
 
-    Right now voting for the Doughnut emoji causes an error. To fix this we need to deploy an update to our emojivoto.
+    We would like to demonstrate an update procedure with Marblerun.
 
-    In a non confidential environment you could simply replace your currently running application with the new one, in our case however the Coordinator forbids this to prevent unauthorized alterations to the deployment.
+    If you have voted for the Doughnut emoji you have been presented with an error message. This is an intentional "bug" in the application that we are going to fix now by rolling out a patched emojivoto version.
 
-    To avoid having to redeploy your entire application from scratch, Marblerun allows its users to upload a seperate "Update Manifest" which defines a new version of a previously set application and, once uploaded, only allows those applications to run under the new version.
+    In a non-confidential environment, you could simply replace the currently running version with the patched one. In our case, the Coordinator prevents unauthorized alterations to the deployment and only accepts versions as previously specified in the manifest.
 
-    To upload the "Update Manifest" we need to authenticate ourselves to the Coordinator using the previously created Admin key and certificate:
+    To avoid having to redeploy your entire application from scratch, Marblerun allows its users to upload a separate "Update Manifest" which defines new versions of a previously set `Package`.
+
+    To upload the "Update Manifest" we need to authenticate ourselves to the Coordinator using the previously created admin key and certificate:
 
     ```bash
     marblerun manifest update tools/update-manifest.json $MARBLERUN --cert admin_certificate.crt --key admin_private.key [--insecure]
     ```
-
-    We can now update the image used by the emojivoto voting statefulset:
+    We can now update the image used by the emojivoto voting Statefulset:
 
     ```bash
     kubectl set image -n emojivoto statefulset/voting voting-svc=ghcr.io/edgelesssys/emojivoto/voting-svc:v0.3.0-fix
     ```
 
-    Wait for the pod to restart. Once it is up and running again you can reconnect to the webpage and vote for the Doughnut as your favorite emoji!
+    Updating the manifest will invalidate Marblerun's certificate chain so that the existing services will not accept old versions of the updated voting service anymore. Hence, we need to restart the other services to obtain a fresh certificate chain:
 
-    >It might be neccessary to restart some components of the application. If you receive any errors when trying to vote you can rollout a restart and then reconnect to the webpage:
-    >```bash
-    >kubectl rollout restart -n emojivoto statefulset emoji web
-    >```
+    ```bash
+    kubectl rollout restart -n emojivoto statefulset emoji web
+    ```
 
-1. Bringing the Coordinator into recovery mode
+    Wait for the pods to restart. Once they are up and running again you can reconnect to the webpage and vote for the Doughnut as your favorite emoji!
 
-    As already mentioned, some cases require manual intervention to recover the Coordinator, for example if the host, your virtual machine was running on, changes.
+1. (Optional) Perform a Coordinator recovery
+
+    1. Bring the Coordinator into recovery mode
+
+        As already mentioned, some cases require manual intervention to recover the Coordinator, for example, if the host, the Coordinator was running on, changes.
     
-    On minikube we can simulate this behavior by first stopping minikube, and then deleting the `sealed_key` of the Coordinator.
+        On minikube we can simulate this behavior by first stopping minikube, and then deleting the `sealed_key` of the Coordinator.
 
-    * If you are running minikube in docker, `sealed_key` can be removed as follows:
+        * If you are running minikube in docker, `sealed_key` can be removed as follows:
     
-    ```bash
-    minikube stop
-    rm /var/lib/docker/volumes/minikube/_data/hostpath-provisioner/marblerun/coordinator-pv-claim/sealed_key
-    ```
+        ```bash
+        minikube stop
+        rm /var/lib/docker/volumes/minikube/_data/hostpath-provisioner/marblerun/coordinator-pv-claim/sealed_key
+        ```
 
-    * Restart minikube
+        * Restart minikube
 
-    ```bash
-    minikube start
-    ```
+        ```bash
+        minikube start
+        ```
 
-    * Note that the previously running emojivoto pods will now fail to start. Check the status of the coordinator:
+        * Note that the previously running emojivoto pods will now fail to start. Check the status of the coordinator:
 
-    ```bash
-    marblerun status $MARBLERUN [--insecure]
-    ```
+        ```bash
+        marblerun status $MARBLERUN [--insecure]
+        ```
 
-    * The output should be the following:
+        * The output should be the following:
 
-    ```bash
-    1: Coordinator is in recovery mode. Either upload a key to unseal the saved state, or set a new manifest. For more information on how to proceed, consult the documentation.
-    ```
+        ```bash
+        1: Coordinator is in recovery mode. Either upload a key to unseal the saved state, or set a new manifest. For more information on how to proceed, consult the documentation.
+        ```
 
-1. Decrypting the Recovery Key
+    1. Decrypt the Recovery Key
 
-    Luckily we provided a recovery key when we first set the manifest. We can now decrypt the recovery secret we received from the coordinator:
+        Luckily we provided a recovery key when we first set the manifest. We can now decrypt the recovery secret we received from the coordinator:
 
-    ```bash
-    cat recovery.json | jq -r '.RecoverySecrets.recoveryKey1' | base64 -d > recovery_key_encrypted
-    openssl pkeyutl -inkey recovery_priv.key -in recovery_key_encrypted -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -decrypt -out recovery_key_decrypted
-    ```
+        ```bash
+        cat recovery.json | jq -r '.RecoverySecrets.recoveryKey1' | base64 -d > recovery_key_encrypted
+        openssl pkeyutl -inkey recovery_priv.key -in recovery_key_encrypted -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -decrypt -out recovery_key_decrypted
+        ```
 
-1. Recovering the Coordinator
+    1. Recover the Coordinator
 
-    Now we can upload the key and recover Marblerun without losing data:
+        Now we can upload the key and recover Marblerun without losing data:
 
-    ```bash
-    marblerun recover $MARBLERUN recovery_key_decrypted [--insecure]
-    ```
+        ```bash
+        marblerun recover $MARBLERUN recovery_key_decrypted [--insecure]
+        ```
 
-    If the recovery was successful all emojivoto pods can once again start correctly.
+        If the recovery was successful all emojivoto pods can once again start correctly.
 
-1. Scaling your application
+1. (Optional) Scaling your application
 
     Increasing or decreasing the number of pods running in your application requires no extra steps with Marblerun.
 
