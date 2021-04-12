@@ -1,0 +1,30 @@
+diff -ruN emojivoto-voting-svc/api/api.go emojivoto-voting-update/api/api.go
+--- emojivoto-voting-svc/api/api.go	2021-04-06 15:28:33.197103136 +0200
++++ emojivoto-voting-update/api/api.go	2021-04-12 12:59:14.845182968 +0200
+@@ -2,7 +2,6 @@
+ 
+ import (
+ 	"context"
+-	"fmt"
+ 
+ 	pb "github.com/edgelesssys/emojivoto/emojivoto-voting-svc/gen/proto"
+ 	"github.com/edgelesssys/emojivoto/emojivoto-voting-svc/voting"
+@@ -19,7 +18,7 @@
+ }
+ 
+ func (pS *PollServiceServer) VoteDoughnut(_ context.Context, _ *pb.VoteRequest) (*pb.VoteResponse, error) {
+-	return nil, fmt.Errorf("ERROR")
++	return pS.vote(":doughnut:")
+ }
+ 
+ func (pS *PollServiceServer) VotePoop(_ context.Context, _ *pb.VoteRequest) (*pb.VoteResponse, error) {
+diff -ruN emojivoto-voting-svc/enclave/enclave.json emojivoto-voting-update/enclave/enclave.json
+--- emojivoto-voting-svc/enclave/enclave.json	2021-04-06 15:29:04.912999792 +0200
++++ emojivoto-voting-update/enclave/enclave.json	2021-04-12 12:59:29.809121940 +0200
+@@ -4,5 +4,5 @@
+     "Debug": true,
+     "Heapsize": 512,
+     "ProductID": 6,
+-    "SecurityVersion": 1
++    "SecurityVersion": 2
+ }
