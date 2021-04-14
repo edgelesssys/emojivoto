@@ -133,6 +133,7 @@ then
 fi
 helm repo add edgeless https://helm.edgeless.systems/stable > /dev/null
 marblerun install --domain "$MARBLERUN_DNSNAME.$DOMAIN"
+marblerun check
 echo -e "[$okStatus] Done"
 
 

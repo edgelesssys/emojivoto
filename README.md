@@ -36,23 +36,25 @@ Deploy the application to Minikube using the Marblerun.
 
     Deploy with [Marblerun CLI](https://marblerun.sh/docs/getting-started/cli/)
 
-    Update the hostname with your cluster's FQDN or use localhost if you're running on minikube
-
-    * If you're deploying on a cluster with nodes that support SGX1+FLC (e.g. AKS or minikube + Azure Standard_DC*s)
+    * If you're running minikube on a machine that support SGX1+FLC (e.g.Azure Standard_DC*s)
 
     ```bash
-    marblerun install --domain=mycluster.uksouth.cloudapp.azure.com
+    marblerun install
     ```
 
     * Otherwise
 
     ```bash
-    marblerun install --domain=mycluster.uksouth.cloudapp.azure.com --simulation
+    marblerun install --simulation
     ```
 
-    You can check with `kubectl get pods -n marblerun` that the Coordinator is running.
+    Wait for the control plane to finish installing:
 
-1. Get the Coordinator's address and set the DNS
+    ```bash
+    marblerun check
+    ```
+
+1. Port forward the Coordinator’s Client API
 
     ```bash
     kubectl -n marblerun port-forward svc/coordinator-client-api 4433:4433 --address localhost >/dev/null &
@@ -60,7 +62,7 @@ Deploy the application to Minikube using the Marblerun.
     ```
 
 1. Verify the Quote and get the Coordinator's Root-Certificate
-    * If you're running on a cluster with nodes that support SGX1+FLC
+    * If you're running minikube on a machine that support SGX1+FLC
 
         ```bash
         marblerun certificate root $MARBLERUN -o marblerun.crt
@@ -73,7 +75,7 @@ Deploy the application to Minikube using the Marblerun.
         ```
 
 1. (Optional) Create an admin key and certificate
-    
+
     To verify that your deployment has not been altered, the Manifest is usually set in stone after it was set to ensure no one can alter with your cluster.
 
     Yet, updates play an important role to ensure your software stays secure. To avoid having to redeploy your application from scratch, Marblerun allows uploading a separate [“Update Manifest”](https://www.marblerun.sh/docs/tasks/update-manifest) which increases the minimum SecurityVersion of one or multiple already deployed packages.
@@ -89,7 +91,7 @@ Deploy the application to Minikube using the Marblerun.
     ```
 
     Use the following command to preserve newlines correctly:
-    
+
     ```bash
     awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' admin_certificate.crt
     ```
@@ -132,7 +134,20 @@ Deploy the application to Minikube using the Marblerun.
 
 1. Set the manifest
 
-    * If you're running on a cluster with nodes that support SGX1+FLC
+    The emojivoto application comes with a webinterface reachable through HTTPS.
+    In order to provision a certificate with the correct domain we need to configure the right domain.
+
+    * If your running minikube on your local machine you can leave the default value `localhost`
+
+    * If you're running emojivoto on a remote machine you can set a custom domain name:
+
+    ```bash
+    cat "tools/manifest.json" | sed "s/localhost/<your-domain>/g" > tools/manifest.json
+    ```
+
+    Finally, we can upload the manifest to the control plane:
+
+    * If you're running minikube on a machine that support SGX1+FLC
 
         ```bash
         marblerun manifest set tools/manifest.json $MARBLERUN --recoverydata recovery.json
@@ -144,13 +159,6 @@ Deploy the application to Minikube using the Marblerun.
         marblerun manifest set tools/manifest.json $MARBLERUN --insecure --recoverydata recovery.json
         ```
 
-    * If you're running emojivoto on a custom domain, you can set the certificate's CN accordingly
-
-    ```bash
-    cat "tools/manifest.json" | sed "s/localhost/<your-domain>/g" > /tmp/manifest.json
-    marblerun manifest set /tmp/manifest.json $MARBLERUN
-    ```
-
 1. Create and annotate emojivoto namespace for auto-injection
 
     Create namespace
@@ -159,7 +167,7 @@ Deploy the application to Minikube using the Marblerun.
     kubectl create namespace emojivoto
     ```
 
-    * Annotate namespace on a cluster with nodes that support SGX1+FLC
+    * Annotate the namespace if you're running minikube on a machine that support SGX1+FLC
 
         ```bash
         marblerun namespace add emojivoto
@@ -173,7 +181,7 @@ Deploy the application to Minikube using the Marblerun.
 
 1. Deploy emojivoto using [helm](https://helm.sh/docs/intro/install/)
 
-    * If you're deploying on a cluster with nodes that support SGX1+FLC (e.g. AKS or minikube + Azure Standard_DC*s)
+    * If you're running minikube on a machine that support SGX1+FLC
 
     ```bash
     helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes -n emojivoto
@@ -185,29 +193,14 @@ Deploy the application to Minikube using the Marblerun.
     helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes -n emojivoto
     ```
 
-    You can check with `kubectl get pods -n emojivoto` that all pods is running.
+    You can check with `kubectl get pods -n emojivoto` that all pods are running.
 
-1. Install Marblerun-Certificate in your browser
-    * **Warning** Be careful when adding certificates to your browser. We only do this temporarly for the sake of this demo. Make sure you don't use your browser for other activities in the meanwhile and remove the certificate afterwards.
-    * Chrome:
-        * Go to <chrome://settings/security>
-        * Go to `"Manage certificates" > "Import..."`
-        * Follow the "Certificate Import Wizard" and import the `marblerun.crt` of the previous step as a "Personal" certificate
-    * Firefox:
-        * Go to `Tools > Options > Advanced > Certificates: View Certificates`
-        * Go to `Import...` and select the `marblerun.crt` of the previous step
 
 1. Verify the manifest
     * You can verify the manifest on the client-side before using the app:
 
     ```bash
     tools/check_manifest.sh tools/manifest.json
-    ```
-
-    * If you're running with a custom domain
-
-    ```
-    tools/check_manifest.sh /tmp/manifest.json
     ```
 
 
@@ -254,11 +247,11 @@ Deploy the application to Minikube using the Marblerun.
     1. Bring the Coordinator into recovery mode
 
         As already mentioned, some cases require manual intervention to recover the Coordinator, for example, if the host, the Coordinator was running on, changes.
-    
+
         On minikube we can simulate this behavior by first stopping minikube, and then deleting the `sealed_key` of the Coordinator.
 
         * If you are running minikube in docker, `sealed_key` can be removed as follows:
-    
+
         ```bash
         minikube stop
         rm /var/lib/docker/volumes/minikube/_data/hostpath-provisioner/marblerun/coordinator-pv-claim/sealed_key
