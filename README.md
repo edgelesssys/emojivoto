@@ -139,7 +139,7 @@ Deploy the application to Minikube using the Marblerun.
 
     * If your running minikube on your local machine you can leave the default value `localhost`
 
-    * If you're running emojivoto on a remote machine you can set a custom domain name:
+    * If you're running minikube on a remote machine you can set the domain name of your remote machine:
 
     ```bash
     cat "tools/manifest.json" | sed "s/localhost/<your-domain>/g" > tools/manifest.json
