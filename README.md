@@ -55,8 +55,8 @@ Deploy the application to Minikube using the Marblerun.
 1. Get the Coordinator's address and set the DNS
 
     ```bash
-    kubectl -n marblerun port-forward svc/coordinator-client-api 25555:25555 --address localhost >/dev/null &
-    export MARBLERUN=localhost:25555
+    kubectl -n marblerun port-forward svc/coordinator-client-api 4433:4433 --address localhost >/dev/null &
+    export MARBLERUN=localhost:4433
     ```
 
 1. Verify the Quote and get the Coordinator's Root-Certificate
