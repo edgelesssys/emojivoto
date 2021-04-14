@@ -213,6 +213,9 @@ Deploy the application to Minikube using the Marblerun.
     * Browse to [https://localhost](https://localhost).
     * If your running on a custom domain browse to https://\<your-domain\>
 
+    You’ll be presented with a certificate warning because your browser does not know Marblerun’s root certificate as a root of trust. You can safely ignore this error for now and proceed to the website.
+    Voila! Your emoji votes have never been safer!
+
 1. (Optional) Update emojivoto
 
     We would like to demonstrate an update procedure with Marblerun.
