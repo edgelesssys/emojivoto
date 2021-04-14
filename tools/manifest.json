@@ -73,5 +73,7 @@
 			},
 			"ValidFor": 7
 		}
-	}
+	},
+	"Admins": {},
+	"RecoveryKeys": {}
 }

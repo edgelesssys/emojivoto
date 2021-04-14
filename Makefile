@@ -14,3 +14,7 @@ voting-svc:
 	$(MAKE) -C emojivoto-voting-svc
 
 build: web emoji-svc voting-svc
+
+patch:
+	patch -ruN -p 1 -d emojivoto-voting-svc < voting.patch
+	$(MAKE) -C emojivoto-voting-svc

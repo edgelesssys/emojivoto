@@ -72,18 +72,76 @@ Deploy the application to Minikube using the Marblerun.
         marblerun certificate root $MARBLERUN -o marblerun.crt --insecure
         ```
 
+1. (Optional) Create an admin key and certificate
+    
+    To verify that your deployment has not been altered, the Manifest is usually set in stone after it was set to ensure no one can alter with your cluster.
+
+    Yet, updates play an important role to ensure your software stays secure. To avoid having to redeploy your application from scratch, Marblerun allows uploading a separate [“Update Manifest”](https://www.marblerun.sh/docs/tasks/update-manifest) which increases the minimum SecurityVersion of one or multiple already deployed packages.
+
+    In order to deploy an "Update Manifest",  you need to be in possession of a certificate/private key pair which has been defined in the `Admins` section of the original Manifest
+
+    For this, we set an admin certificate in the Marblerun manifest.
+
+    Generate certificate and key:
+
+    ```bash
+    openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout admin_private.key -out admin_certificate.crt
+    ```
+
+    Use the following command to preserve newlines correctly:
+    
+    ```bash
+    awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' admin_certificate.crt
+    ```
+
+    Set the output of the previous command in `tools/manifest.json` as the value for `emojivoto-admin` in the `Admins` section:
+    ```json
+    //...
+    "Admins": {
+		"emojivoto-admin": "-----BEGIN CERTIFICATE-----\nMIIFazCCA1...hIl3LfuHs=\n-----END CERTIFICATE-----\n"
+	}
+    //...
+    ```
+
+1. (Optional) Create a recovery key
+
+    As described in the [Marblerun docs](https://www.marblerun.sh/docs/features/recovery/) some cases require manual intervention to restart the Coordinator on a different host.
+
+    For this we need a recovery key which we set in the manifest.
+
+    Generate the key:
+
+    ```bash
+    openssl genrsa -out recovery_priv.key 4096
+    openssl rsa -in recovery_priv.key -outform PEM -pubout -out recovery_pub.key
+    ```
+
+    Use the following command to preserve newlines correctly:
+    ```bash
+    awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' recovery_pub.key
+    ```
+
+    Set the output of the previous command in `tools/manifest.json` as the value for `recoveryKey1` in the `RecoveryKeys` section:
+    ```json
+    //...
+    "RecoveryKeys": {
+		"recoveryKey1": "-----BEGIN PUBLIC KEY-----\nMIICIjANBg...8CAwEAAQ==\n-----END PUBLIC KEY-----\n"
+	}
+    //...
+    ```
+
 1. Set the manifest
 
     * If you're running on a cluster with nodes that support SGX1+FLC
 
         ```bash
-        marblerun manifest set tools/manifest.json $MARBLERUN
+        marblerun manifest set tools/manifest.json $MARBLERUN --recoverydata recovery.json
         ```
 
     * Otherwise
 
         ```bash
-        marblerun manifest set tools/manifest.json $MARBLERUN --insecure
+        marblerun manifest set tools/manifest.json $MARBLERUN --insecure --recoverydata recovery.json
         ```
 
     * If you're running emojivoto on a custom domain, you can set the certificate's CN accordingly
@@ -95,7 +153,7 @@ Deploy the application to Minikube using the Marblerun.
 
 1. Create and annotate emojivoto namespace for auto-injection
 
-    * Create namespace
+    Create namespace
 
     ```bash
     kubectl create namespace emojivoto
@@ -160,7 +218,103 @@ Deploy the application to Minikube using the Marblerun.
     ```
 
     * Browse to [https://localhost](https://localhost).
-    * If your running on a custom domain browse to https://<your-domain>
+    * If your running on a custom domain browse to https://\<your-domain\>
+
+1. (Optional) Update emojivoto
+
+    We would like to demonstrate an update procedure with Marblerun.
+
+    If you have voted for the Doughnut emoji you have been presented with an error message. This is an intentional "bug" in the application that we are going to fix now by rolling out a patched emojivoto version.
+
+    In a non-confidential environment, you could simply replace the currently running version with the patched one. In our case, the Coordinator prevents unauthorized alterations to the deployment and only accepts versions as previously specified in the manifest.
+
+    To avoid having to redeploy your entire application from scratch, Marblerun allows its users to upload a separate "Update Manifest" which defines new versions of a previously set `Package`.
+
+    To upload the "Update Manifest" we need to authenticate ourselves to the Coordinator using the previously created admin key and certificate:
+
+    ```bash
+    marblerun manifest update tools/update-manifest.json $MARBLERUN --cert admin_certificate.crt --key admin_private.key [--insecure]
+    ```
+    We can now update the image used by the emojivoto voting Statefulset:
+
+    ```bash
+    kubectl set image -n emojivoto statefulset/voting voting-svc=ghcr.io/edgelesssys/emojivoto/voting-svc:v0.3.0-fix
+    ```
+
+    Updating the manifest will invalidate Marblerun's certificate chain so that the existing services will not accept old versions of the updated voting service anymore. Hence, we need to restart the other services to obtain a fresh certificate chain:
+
+    ```bash
+    kubectl rollout restart -n emojivoto statefulset emoji web
+    ```
+
+    Wait for the pods to restart. Once they are up and running again you can reconnect to the webpage and vote for the Doughnut as your favorite emoji!
+
+1. (Optional) Perform a Coordinator recovery
+
+    1. Bring the Coordinator into recovery mode
+
+        As already mentioned, some cases require manual intervention to recover the Coordinator, for example, if the host, the Coordinator was running on, changes.
+    
+        On minikube we can simulate this behavior by first stopping minikube, and then deleting the `sealed_key` of the Coordinator.
+
+        * If you are running minikube in docker, `sealed_key` can be removed as follows:
+    
+        ```bash
+        minikube stop
+        rm /var/lib/docker/volumes/minikube/_data/hostpath-provisioner/marblerun/coordinator-pv-claim/sealed_key
+        ```
+
+        * Restart minikube
+
+        ```bash
+        minikube start
+        ```
+
+        * Note that the previously running emojivoto pods will now fail to start. Check the status of the coordinator:
+
+        ```bash
+        marblerun status $MARBLERUN [--insecure]
+        ```
+
+        * The output should be the following:
+
+        ```bash
+        1: Coordinator is in recovery mode. Either upload a key to unseal the saved state, or set a new manifest. For more information on how to proceed, consult the documentation.
+        ```
+
+    1. Decrypt the Recovery Key
+
+        Luckily we provided a recovery key when we first set the manifest. We can now decrypt the recovery secret we received from the coordinator:
+
+        ```bash
+        cat recovery.json | jq -r '.RecoverySecrets.recoveryKey1' | base64 -d > recovery_key_encrypted
+        openssl pkeyutl -inkey recovery_priv.key -in recovery_key_encrypted -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -decrypt -out recovery_key_decrypted
+        ```
+
+    1. Recover the Coordinator
+
+        Now we can upload the key and recover Marblerun without losing data:
+
+        ```bash
+        marblerun recover $MARBLERUN recovery_key_decrypted [--insecure]
+        ```
+
+        If the recovery was successful all emojivoto pods can once again start correctly.
+
+1. (Optional) Scaling your application
+
+    Increasing or decreasing the number of pods running in your application requires no extra steps with Marblerun.
+
+    * If you want to scale the web frontend to use 3 pods:
+
+    ```bash
+    kubectl scale statefulset -n emojivoto web --replicas=3
+    ```
+
+    * And scale it back down to only 1:
+
+    ```bash
+    kubectl scale statefulset -n emojivoto web --replicas=1
 
 ### In AKS
 
@@ -228,6 +382,7 @@ Build docker images:
 docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_web --tag ghcr.io/edgelesssys/emojivoto/web:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
 docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_emoji_svc --tag ghcr.io/edgelesssys/emojivoto/emoji-svc:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
 docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_voting_svc --tag ghcr.io/edgelesssys/emojivoto/voting-svc:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
+docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_voting_update --tag ghcr.io/edgelesssys/emojivoto/voting-svc:latest-fix . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
 ```
 
 ## License

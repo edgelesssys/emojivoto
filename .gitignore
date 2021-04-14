@@ -5,3 +5,11 @@ vendor
 **/build
 **/**/build
 go.sum
+admin_private.key
+admin_certificate.crt
+era-config.json
+recovery_priv.key
+recovery_pub.key
+recovery.json
+recovery_key_decrypted
+recovery_key_encrypted
