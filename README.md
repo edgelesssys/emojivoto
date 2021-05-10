@@ -197,10 +197,16 @@ Deploy the application to Minikube using the Marblerun.
 
 
 1. Verify the manifest
-    * You can verify the manifest on the client-side before using the app:
+    You can verify the manifest on the client-side before using the app:
 
+    * If you're running minikube on a machine that support SGX1+FLC
     ```bash
-    tools/check_manifest.sh tools/manifest.json
+    marblerun manifest verify tools/manifest.json $MARBLERUN
+    ```
+
+    * Otherwise
+    ```bash
+    marblerun manifest verify tools/manifest.json $MARBLERUN --insecure
     ```
 
 
