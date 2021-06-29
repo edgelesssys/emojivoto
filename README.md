@@ -34,7 +34,7 @@ Deploy the application to Minikube using the Marblerun.
 
 1. Install Marblerun
 
-    Deploy with [Marblerun CLI](https://marblerun.sh/docs/getting-started/cli/)
+    Deploy with [Marblerun CLI](https://www.marblerun.sh/docs/getting-started/quickstart/#step-1-install-the-cli)
 
     * If you're running minikube on a machine that support SGX1+FLC (e.g.Azure Standard_DC*s)
 
@@ -78,7 +78,7 @@ Deploy the application to Minikube using the Marblerun.
 
     To verify that your deployment has not been altered, the Manifest is usually set in stone after it was set to ensure no one can alter with your cluster.
 
-    Yet, updates play an important role to ensure your software stays secure. To avoid having to redeploy your application from scratch, Marblerun allows uploading a separate [“Update Manifest”](https://www.marblerun.sh/docs/tasks/update-manifest) which increases the minimum SecurityVersion of one or multiple already deployed packages.
+    Yet, updates play an important role to ensure your software stays secure. To avoid having to redeploy your application from scratch, Marblerun allows uploading a separate [“Update Manifest”](https://www.marblerun.sh/docs/workflows/update-manifest/) which increases the minimum SecurityVersion of one or multiple already deployed packages.
 
     In order to deploy an "Update Manifest",  you need to be in possession of a certificate/private key pair which has been defined in the `Admins` section of the original Manifest
 
