@@ -1,6 +1,6 @@
 {
     "Packages": {
-        "web": {
+        "voting-svc": {
 			"SecurityVersion": 2
         }
     }
