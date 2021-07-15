@@ -74,17 +74,35 @@ Deploy the application to Minikube using the Marblerun.
         marblerun certificate root $MARBLERUN -o marblerun.crt --insecure
         ```
 
-1. (Optional) Create an admin key and certificate
+1. (Optional) Create a user key and certificate
 
     To verify that your deployment has not been altered, the Manifest is usually set in stone after it was set to ensure no one can alter with your cluster.
 
     Yet, updates play an important role to ensure your software stays secure. To avoid having to redeploy your application from scratch, Marblerun allows uploading a separate [“Update Manifest”](https://www.marblerun.sh/docs/workflows/update-manifest/) which increases the minimum SecurityVersion of one or multiple already deployed packages.
 
-    In order to deploy an "Update Manifest",  you need to be in possession of a certificate/private key pair which has been defined in the `Admins` section of the original Manifest
+    In order to deploy an "Update Manifest",  you need to be in possession of a certificate/private key pair of a user with update permissions for the packages you wish to update.
+    This information is defined in the `Users` section of the original Manifest.
 
-    For this, we set an admin certificate in the Marblerun manifest.
+    First we create the new `update_web` role in the manifest. Users with this role will be able to update the package `web`.
 
-    Generate certificate and key:
+    ```javascript
+    {
+        //...
+        "Users": {
+            //...
+        },
+        "Roles": {
+            "update_web": {
+                "ResourceType": "Packages",
+                "ResourceNames": ["web"],
+                "Actions": ["UpdateSecurityVersion"]
+            }
+        }
+        //...
+    }
+    ```
+
+    Next we generate a certificate and key:
 
     ```bash
     openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout admin_private.key -out admin_certificate.crt
@@ -96,13 +114,21 @@ Deploy the application to Minikube using the Marblerun.
     awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' admin_certificate.crt
     ```
 
-    Set the output of the previous command in `tools/manifest.json` as the value for `emojivoto-admin` in the `Admins` section:
-    ```json
-    //...
-    "Admins": {
-		"emojivoto-admin": "-----BEGIN CERTIFICATE-----\nMIIFazCCA1...hIl3LfuHs=\n-----END CERTIFICATE-----\n"
-	}
-    //...
+    Create a new user called `emojivoto-admin` in the `Users` section in `tools/manifest.json`.
+    Set the output of the previous command as the value for `Certificate`, and create a role binding for `update_web`:
+    ```javascript
+    {
+        //...
+        "Users": {
+	    	"emojivoto-admin": {
+                "Certificate": "-----BEGIN CERTIFICATE-----\nMIIFazCCA1...hIl3LfuHs=\n-----END CERTIFICATE-----\n",
+                "Roles": [
+                    "update_web"
+                ]
+            }
+	    }
+        //...
+    }
     ```
 
 1. (Optional) Create a recovery key

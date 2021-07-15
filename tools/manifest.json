@@ -74,6 +74,7 @@
 			"ValidFor": 7
 		}
 	},
-	"Admins": {},
+	"Users": {},
+	"Roles": {},
 	"RecoveryKeys": {}
 }
