@@ -83,7 +83,7 @@ Deploy the application to Minikube using the Marblerun.
     In order to deploy an "Update Manifest",  you need to be in possession of a certificate/private key pair of a user with update permissions for the packages you wish to update.
     This information is defined in the `Users` section of the original Manifest.
 
-    First we create the new `update_web` role in the manifest. Users with this role will be able to update the package `web`.
+    First we create the new `update_voting` role in the manifest. Users with this role will be able to update the package `voting-svc`.
 
     ```javascript
     {
@@ -92,9 +92,9 @@ Deploy the application to Minikube using the Marblerun.
             //...
         },
         "Roles": {
-            "update_web": {
+            "update_voting": {
                 "ResourceType": "Packages",
-                "ResourceNames": ["web"],
+                "ResourceNames": ["voting-svc"],
                 "Actions": ["UpdateSecurityVersion"]
             }
         }
@@ -115,7 +115,7 @@ Deploy the application to Minikube using the Marblerun.
     ```
 
     Create a new user called `emojivoto-admin` in the `Users` section in `tools/manifest.json`.
-    Set the output of the previous command as the value for `Certificate`, and create a role binding for `update_web`:
+    Set the output of the previous command as the value for `Certificate`, and create a role binding for `update_voting`:
     ```javascript
     {
         //...
@@ -123,7 +123,7 @@ Deploy the application to Minikube using the Marblerun.
 	    	"emojivoto-admin": {
                 "Certificate": "-----BEGIN CERTIFICATE-----\nMIIFazCCA1...hIl3LfuHs=\n-----END CERTIFICATE-----\n",
                 "Roles": [
-                    "update_web"
+                    "update_voting"
                 ]
             }
 	    }
@@ -266,7 +266,7 @@ Deploy the application to Minikube using the Marblerun.
     We can now update the image used by the emojivoto voting Statefulset:
 
     ```bash
-    kubectl set image -n emojivoto statefulset/voting voting-svc=ghcr.io/edgelesssys/emojivoto/voting-svc:v0.3.0-fix
+    kubectl set image -n emojivoto statefulset/voting voting-svc=ghcr.io/edgelesssys/emojivoto/voting-svc:v0.4.0-fix
     ```
 
     Updating the manifest will invalidate Marblerun's certificate chain so that the existing services will not accept old versions of the updated voting service anymore. Hence, we need to restart the other services to obtain a fresh certificate chain:
