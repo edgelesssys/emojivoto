@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -24,7 +25,10 @@ import (
 // pick a favorite, so it picks one at random. C'mon VoteBot, try harder!
 
 var (
-	client = &http.Client{Transport: &ochttp.Transport{}}
+	base = &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client = &http.Client{Transport: &ochttp.Transport{Base: base}}
 
 	ocagentHost = os.Getenv("OC_AGENT_HOST")
 )
@@ -54,7 +58,7 @@ func main() {
 	trace.RegisterExporter(oce)
 	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 
-	webURL := "http://" + webHost
+	webURL := "https://" + webHost
 	if _, err := url.Parse(webURL); err != nil {
 		log.Fatalf("WEB_HOST %s is invalid", webHost)
 	}
