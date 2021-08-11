@@ -25,28 +25,60 @@ Deploy the application to Minikube using the Marblerun.
 
 1. Start Minikube
 
-   Start with a fresh minikube and give it sufficient memory:
+   Start with a fresh minikube and give it sufficient memory.
 
-   ```bash
-   minikube delete
-   minikube start --memory=6g
-   ```
+    * If you're running minikube on a machine that support SGX1+FLC (e.g.Azure Standard_DC*s)
+
+        ```bash
+        minikube delete
+        minikube start --mount --mount-string /dev/sgx:/dev/sgx --memory 6g
+        ```
+        Note that your system either requires Linux 5.11+ with SGX support enabled (`CONFIG_X86_SGX=y`), or Intel's SGX DCAP Driver is installed with version 1.41.
+
+    * Otherwise, if you want to test it out on an unsupported machine in simulation mode:
+
+        ```bash
+        minikube delete
+        minikube start --memory=6g
+        ```
+
+1. **(Not required for simulation mode)** Install [Intel's SGX Device Plugin for Kubernetes](https://intel.github.io/intel-device-plugins-for-kubernetes/cmd/sgx_plugin/README.html)
+
+    *Note:* Wait a couple of seconds between each `kubectl` step, as Kubernetes needs to deploy the services in the background before they become available for the next step.
+    ```bash
+    kubectl apply -k https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/sgx_nfd?ref=main
+
+    kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.3.1/cert-manager.yaml
+
+    kubectl apply -k https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/operator/default?ref=main
+
+    kubectl apply -f https://raw.githubusercontent.com/intel/intel-device-plugins-for-kubernetes/main/deployments/operator/samples/deviceplugin_v1_sgxdeviceplugin.yaml
+
+    export INTEL_DEVICE_PLUGINS_SRC=~/intel-device-plugins-for-kubernetes
+    git clone https://github.com/intel/intel-device-plugins-for-kubernetes ${INTEL_DEVICE_PLUGINS_SRC}
+
+    cd ${INTEL_DEVICE_PLUGINS_SRC}
+    make intel-sgx-plugin
+    make intel-sgx-initcontainer
+
+    kubectl apply -k ${INTEL_DEVICE_PLUGINS_SRC}/deployments/sgx_plugin/overlays/epc-nfd/
+    ```
 
 1. Install Marblerun
 
     Deploy with [Marblerun CLI](https://www.marblerun.sh/docs/getting-started/quickstart/#step-1-install-the-cli)
 
-    * If you're running minikube on a machine that support SGX1+FLC (e.g.Azure Standard_DC*s)
+    * If you are running on an SGX1+FLC-enabled machine:
 
-    ```bash
-    marblerun install
-    ```
+        ```bash
+        marblerun install
+        ```
 
     * Otherwise
 
-    ```bash
-    marblerun install --simulation
-    ```
+        ```bash
+        marblerun install --simulation
+        ```
 
     Wait for the control plane to finish installing:
 
