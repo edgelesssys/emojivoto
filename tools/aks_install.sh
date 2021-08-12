@@ -36,7 +36,7 @@ fi
 
 if ! command -v marblerun &> /dev/null
 then
-    echo "[$failStatus] Marblerun CLI could not be found"
+    echo "[$failStatus] MarbleRun CLI could not be found"
     echo "See Installation Guide @ https://marblerun.sh/docs/getting-started/cli"
     exit
 fi
@@ -115,7 +115,7 @@ then
 fi
 
 #
-# 2. Deploy Marblerun+DNS and Ingress-Controller+DNS
+# 2. Deploy MarbleRun+DNS and Ingress-Controller+DNS
 #
 
 # install ingress controller

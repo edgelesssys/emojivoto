@@ -13,15 +13,13 @@ The application is composed of the following 3 services:
 Confidential emojivoto is build as a confidential computing application:
 
 * Each service runs in a confidential enclave using [EGo](https://ego.dev)
-* The application is distributed, configured, and connected using [Marblerun](https://github.com/edgelesssys/marblerun)
+* The application is distributed, configured, and connected using [MarbleRun](https://github.com/edgelesssys/marblerun)
 
 ![Emojivoto Topology](assets/emojivoto-topology.gif "Emojivoto Topology")
 
 ## Running
 
 ### In Minikube
-
-Deploy the application to Minikube using the Marblerun.
 
 1. Start Minikube
 
@@ -32,9 +30,9 @@ Deploy the application to Minikube using the Marblerun.
    minikube start --memory=6g
    ```
 
-1. Install Marblerun
+1. Install MarbleRun
 
-    Deploy with [Marblerun CLI](https://www.marblerun.sh/docs/getting-started/quickstart/#step-1-install-the-cli)
+    Deploy with [MarbleRun CLI](https://www.marblerun.sh/docs/getting-started/quickstart/#step-1-install-the-cli)
 
     * If you're running minikube on a machine that support SGX1+FLC (e.g.Azure Standard_DC*s)
 
@@ -78,7 +76,7 @@ Deploy the application to Minikube using the Marblerun.
 
     To verify that your deployment has not been altered, the Manifest is usually set in stone after it was set to ensure no one can alter with your cluster.
 
-    Yet, updates play an important role to ensure your software stays secure. To avoid having to redeploy your application from scratch, Marblerun allows uploading a separate [“Update Manifest”](https://www.marblerun.sh/docs/workflows/update-manifest/) which increases the minimum SecurityVersion of one or multiple already deployed packages.
+    Yet, updates play an important role to ensure your software stays secure. To avoid having to redeploy your application from scratch, MarbleRun allows uploading a separate [“Update Manifest”](https://www.marblerun.sh/docs/workflows/update-manifest/) which increases the minimum SecurityVersion of one or multiple already deployed packages.
 
     In order to deploy an "Update Manifest",  you need to be in possession of a certificate/private key pair of a user with update permissions for the packages you wish to update.
     This information is defined in the `Users` section of the original Manifest.
@@ -133,7 +131,7 @@ Deploy the application to Minikube using the Marblerun.
 
 1. (Optional) Create a recovery key
 
-    As described in the [Marblerun docs](https://www.marblerun.sh/docs/features/recovery/) some cases require manual intervention to restart the Coordinator on a different host.
+    As described in the [MarbleRun docs](https://www.marblerun.sh/docs/features/recovery/) some cases require manual intervention to restart the Coordinator on a different host.
 
     For this we need a recovery key which we set in the manifest.
 
@@ -245,18 +243,18 @@ Deploy the application to Minikube using the Marblerun.
     * Browse to [https://localhost](https://localhost).
     * If your running on a custom domain browse to https://\<your-domain\>
 
-    You’ll be presented with a certificate warning because your browser does not know Marblerun’s root certificate as a root of trust. You can safely ignore this error for now and proceed to the website.
+    You’ll be presented with a certificate warning because your browser does not know MarbleRun’s root certificate as a root of trust. You can safely ignore this error for now and proceed to the website.
     Voila! Your emoji votes have never been safer!
 
 1. (Optional) Update emojivoto
 
-    We would like to demonstrate an update procedure with Marblerun.
+    We would like to demonstrate an update procedure with MarbleRun.
 
     If you have voted for the Doughnut emoji you have been presented with an error message. This is an intentional "bug" in the application that we are going to fix now by rolling out a patched emojivoto version.
 
     In a non-confidential environment, you could simply replace the currently running version with the patched one. In our case, the Coordinator prevents unauthorized alterations to the deployment and only accepts versions as previously specified in the manifest.
 
-    To avoid having to redeploy your entire application from scratch, Marblerun allows its users to upload a separate "Update Manifest" which defines new versions of a previously set `Package`.
+    To avoid having to redeploy your entire application from scratch, MarbleRun allows its users to upload a separate "Update Manifest" which defines new versions of a previously set `Package`.
 
     To upload the "Update Manifest" we need to authenticate ourselves to the Coordinator using the previously created admin key and certificate:
 
@@ -269,7 +267,7 @@ Deploy the application to Minikube using the Marblerun.
     kubectl set image -n emojivoto statefulset/voting voting-svc=ghcr.io/edgelesssys/emojivoto/voting-svc:v0.4.0-fix
     ```
 
-    Updating the manifest will invalidate Marblerun's certificate chain so that the existing services will not accept old versions of the updated voting service anymore. Hence, we need to restart the other services to obtain a fresh certificate chain:
+    Updating the manifest will invalidate MarbleRun's certificate chain so that the existing services will not accept old versions of the updated voting service anymore. Hence, we need to restart the other services to obtain a fresh certificate chain:
 
     ```bash
     kubectl rollout restart -n emojivoto statefulset emoji web
@@ -321,7 +319,7 @@ Deploy the application to Minikube using the Marblerun.
 
     1. Recover the Coordinator
 
-        Now we can upload the key and recover Marblerun without losing data:
+        Now we can upload the key and recover MarbleRun without losing data:
 
         ```bash
         marblerun recover $MARBLERUN recovery_key_decrypted [--insecure]
@@ -331,7 +329,7 @@ Deploy the application to Minikube using the Marblerun.
 
 1. (Optional) Scaling your application
 
-    Increasing or decreasing the number of pods running in your application requires no extra steps with Marblerun.
+    Increasing or decreasing the number of pods running in your application requires no extra steps with MarbleRun.
 
     * If you want to scale the web frontend to use 3 pods:
 
@@ -360,10 +358,10 @@ Further you need to be [logged in](https://docs.microsoft.com/en-us/cli/azure/au
 The following tasks are performed by the script:
 
 1. Optionally install linkerd
-1. Install Marblerun
+1. Install MarbleRun
 1. Install an NGINX-Ingress-Controller
 1. Associate domain names with LoadBalancer public IPs
-    * marblerun-xxx.cluster-domain -> Marblerun Client API
+    * marblerun-xxx.cluster-domain -> MarbleRun Client API
     * emojivoto-xxx.cluster-domain -> NGINX-Ingress-Controller
 1. Create an emojivoto deployment
 1. Create an ingress resource to forward traffic via HTTPS-SNI
