@@ -81,7 +81,7 @@ Confidential emojivoto is build as a confidential computing application:
     In order to deploy an "Update Manifest",  you need to be in possession of a certificate/private key pair of a user with update permissions for the packages you wish to update.
     This information is defined in the `Users` section of the original Manifest.
 
-    First we create the new `update_voting` role in the manifest. Users with this role will be able to update the package `voting-svc`.
+    First we create the new `updateVoting` role in the manifest. Users with this role will be able to update the package `voting-svc`.
 
     ```javascript
     {
@@ -90,7 +90,7 @@ Confidential emojivoto is build as a confidential computing application:
             //...
         },
         "Roles": {
-            "update_voting": {
+            "updateVoting": {
                 "ResourceType": "Packages",
                 "ResourceNames": ["voting-svc"],
                 "Actions": ["UpdateSecurityVersion"]
@@ -113,7 +113,7 @@ Confidential emojivoto is build as a confidential computing application:
     ```
 
     Create a new user called `emojivoto-admin` in the `Users` section in `tools/manifest.json`.
-    Set the output of the previous command as the value for `Certificate`, and create a role binding for `update_voting`:
+    Set the output of the previous command as the value for `Certificate`, and create a role binding for `updateVoting`:
     ```javascript
     {
         //...
@@ -121,7 +121,7 @@ Confidential emojivoto is build as a confidential computing application:
 	    	"emojivoto-admin": {
                 "Certificate": "-----BEGIN CERTIFICATE-----\nMIIFazCCA1...hIl3LfuHs=\n-----END CERTIFICATE-----\n",
                 "Roles": [
-                    "update_voting"
+                    "updateVoting"
                 ]
             }
 	    }
@@ -322,7 +322,7 @@ Confidential emojivoto is build as a confidential computing application:
         Now we can upload the key and recover MarbleRun without losing data:
 
         ```bash
-        marblerun recover $MARBLERUN recovery_key_decrypted [--insecure]
+        marblerun recover recovery_key_decrypted $MARBLERUN [--insecure]
         ```
 
         If the recovery was successful all emojivoto pods can once again start correctly.

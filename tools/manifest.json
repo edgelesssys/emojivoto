@@ -61,7 +61,7 @@
 		"owner": [9,9,9]
 	},
 	"Secrets": {
-		"web_cert_shared": {
+		"webCertShared": {
 			"Shared": true,
 			"Size": 256,
 			"Type": "cert-ecdsa",
