@@ -28,8 +28,8 @@
 			"Parameters": {
 				"Env": {
 					"WEB_PORT": "4433",
-					"WEB_CERT": "{{ pem .Secrets.web_cert_shared.Cert }}",
-					"WEB_CERT_KEY": "{{ pem .Secrets.web_cert_shared.Private }}",
+					"WEB_CERT": "{{ pem .Secrets.webCertShared.Cert }}",
+					"WEB_CERT_KEY": "{{ pem .Secrets.webCertShared.Private }}",
 				  	"EMOJISVC_HOST": "emoji-svc.emojivoto:8080",
 				  	"VOTINGSVC_HOST": "voting-svc.emojivoto:8080",
 				  	"INDEX_BUNDLE": "/edg/hostfs/dist/index_bundle.js"
