@@ -12,13 +12,13 @@ simulation:
 
 web:
   image: ghcr.io/edgelesssys/emojivoto/web
-  imageVersion: v0.4.0
+  imageVersion: v0.5.0
   tlsServer: enabled
 
 emoji:
   image: ghcr.io/edgelesssys/emojivoto/emoji-svc
-  imageVersion: v0.4.0
+  imageVersion: v0.5.0
 
 voting:
   image: ghcr.io/edgelesssys/emojivoto/voting-svc
-  imageVersion: v0.4.0
+  imageVersion: v0.5.0
