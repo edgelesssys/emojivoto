@@ -5,7 +5,7 @@ go 1.13
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.0
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
-	github.com/edgelesssys/ego v0.3.1
+	github.com/edgelesssys/ego v0.3.2
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
