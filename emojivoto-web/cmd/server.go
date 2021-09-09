@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"log"
 	"os"
 	"time"
@@ -9,11 +8,9 @@ import (
 	"contrib.go.opencensus.io/exporter/ocagent"
 	pb "github.com/edgelesssys/emojivoto/emojivoto-web/gen/proto"
 	"github.com/edgelesssys/emojivoto/emojivoto-web/web"
-	"github.com/edgelesssys/ego/marble"
 	"go.opencensus.io/plugin/ocgrpc"
 	"go.opencensus.io/trace"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 var (
@@ -23,25 +20,16 @@ var (
 	indexBundle          = os.Getenv("INDEX_BUNDLE")
 	webpackDevServerHost = os.Getenv("WEBPACK_DEV_SERVER")
 	ocagentHost          = os.Getenv("OC_AGENT_HOST")
-	tlsServer            = os.Getenv("EDG_TLS_SERVER")
 )
 
 func main() {
+
 	if webPort == "" || emojisvcHost == "" || votingsvcHost == "" {
 		log.Fatalf("WEB_PORT (currently [%s]) EMOJISVC_HOST (currently [%s]) and VOTINGSVC_HOST (currently [%s]) INDEX_BUNDLE (currently [%s]) environment variables must me set.", webPort, emojisvcHost, votingsvcHost, indexBundle)
 	}
 
-	// get TLS config
-	tlsCfg, err := marble.GetTLSConfig(true)
-	if err != nil {
-		log.Fatalf("Failed to retrieve server TLS config from ego")
-	}
-
-	// create creds
-	serverCreds := credentials.NewTLS(tlsCfg)
-
 	oce, err := ocagent.NewExporter(
-		ocagent.WithTLSCredentials(serverCreds),
+		ocagent.WithInsecure(),
 		ocagent.WithReconnectionPeriod(5*time.Second),
 		ocagent.WithAddress(ocagentHost),
 		ocagent.WithServiceName("web"))
@@ -50,45 +38,22 @@ func main() {
 	}
 	trace.RegisterExporter(oce)
 
-	// get gRPC config
-	clientCfg, err := marble.GetTLSConfig(false)
-	if err != nil {
-		log.Fatalf("Failed to retrieve gRPC TLS config from ego")
-	}
-	// create creds
-	clientCreds := credentials.NewTLS(clientCfg)
-
-	votingSvcConn := openGrpcClientConnection(votingsvcHost, clientCreds)
+	votingSvcConn := openGrpcClientConnection(votingsvcHost)
 	votingClient := pb.NewVotingServiceClient(votingSvcConn)
 	defer votingSvcConn.Close()
 
-	emojiSvcConn := openGrpcClientConnection(emojisvcHost, clientCreds)
+	emojiSvcConn := openGrpcClientConnection(emojisvcHost)
 	emojiSvcClient := pb.NewEmojiServiceClient(emojiSvcConn)
 	defer emojiSvcConn.Close()
 
-	if tlsServer == "enabled" {
-		// Use a different certificate for the web server
-		cert := []byte(os.Getenv("WEB_CERT"))
-		privk := []byte(os.Getenv("WEB_CERT_KEY"))
-
-		tlsCert, err := tls.X509KeyPair(cert, privk)
-		if err != nil {
-			log.Fatalf("cannot create TLS cert: %v", err)
-		}
-		webTLSCfg := &tls.Config{
-			Certificates: []tls.Certificate{tlsCert},
-		}
-		web.StartServer(webPort, webpackDevServerHost, indexBundle, emojiSvcClient, votingClient, webTLSCfg)
-	} else {
-		web.StartServerNoTLS(webPort, webpackDevServerHost, indexBundle, emojiSvcClient, votingClient)
-	}
+	web.StartServer(webPort, webpackDevServerHost, indexBundle, emojiSvcClient, votingClient)
 }
 
-func openGrpcClientConnection(host string, creds credentials.TransportCredentials) *grpc.ClientConn {
+func openGrpcClientConnection(host string) *grpc.ClientConn {
 	log.Printf("Connecting to [%s]", host)
 	conn, err := grpc.Dial(
 		host,
-		grpc.WithTransportCredentials(creds),
+		grpc.WithInsecure(),
 		grpc.WithStatsHandler(new(ocgrpc.ClientHandler)))
 
 	if err != nil {

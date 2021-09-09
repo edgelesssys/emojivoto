@@ -28,13 +28,14 @@
 			"Parameters": {
 				"Env": {
 					"WEB_PORT": "4433",
-					"WEB_CERT": "{{ pem .Secrets.webCertShared.Cert }}",
-					"WEB_CERT_KEY": "{{ pem .Secrets.webCertShared.Private }}",
-				  	"EMOJISVC_HOST": "emoji-svc.emojivoto:8080",
-				  	"VOTINGSVC_HOST": "voting-svc.emojivoto:8080",
-				  	"INDEX_BUNDLE": "/edg/hostfs/dist/index_bundle.js"
+					"EMOJISVC_HOST": "emoji-svc.emojivoto:8080",
+					"VOTINGSVC_HOST": "voting-svc.emojivoto:8080",
+					"INDEX_BUNDLE": "/edg/hostfs/dist/index_bundle.js"
 				}
-			}
+			},
+			"TLS": [
+				"web"
+			]
 		},
 		"emoji-svc": {
 			"Package": "emoji-svc",
@@ -44,7 +45,10 @@
 					"PROM_PORT": "8801",
 					"OC_AGENT_HOST": "oc-collector.tracing:55678"
 				}
-			}
+			},
+			"TLS": [
+				"emoji"
+			]
 		},
 		"voting-svc": {
 			"Package": "voting-svc",
@@ -54,11 +58,18 @@
 					"PROM_PORT": "8801",
 					"OC_AGENT_HOST": "oc-collector.tracing:55678"
 				}
-			}
+			},
+			"TLS": [
+				"voting"
+			]
 		}
 	},
 	"Clients": {
-		"owner": [9,9,9]
+		"owner": [
+			9,
+			9,
+			9
+		]
 	},
 	"Secrets": {
 		"webCertShared": {
@@ -68,7 +79,9 @@
 			"Cert": {
 				"Subject": {
 					"CommonName": "localhost",
-					"DNSNames": ["localhost"]
+					"DNSNames": [
+						"localhost"
+					]
 				}
 			},
 			"ValidFor": 7
@@ -76,5 +89,42 @@
 	},
 	"Users": {},
 	"Roles": {},
-	"RecoveryKeys": {}
+	"RecoveryKeys": {},
+	"TLS": {
+		"web": {
+			"Outgoing": [
+				{
+					"Port": "8080",
+					"Addr": "emoji-svc.emojivoto"
+				},
+				{
+					"Port": "8080",
+					"Addr": "voting-svc.emojivoto"
+				}
+			],
+			"Incoming": [
+				{
+					"Port": "4433",
+					"Cert": "web_cert_shared",
+					"DisableClientAuth": true
+				}
+			]
+		},
+		"emoji": {
+			"Outgoing": [],
+			"Incoming": [
+				{
+					"Port": "8080"
+				}
+			]
+		},
+		"voting": {
+			"Outgoing": [],
+			"Incoming": [
+				{
+					"Port": "8080"
+				}
+			]
+		}
+	}
 }

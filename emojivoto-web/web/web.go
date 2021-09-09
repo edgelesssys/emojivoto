@@ -1,7 +1,6 @@
 package web
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -382,17 +381,7 @@ func handle(path string, h func(w http.ResponseWriter, r *http.Request)) {
 	})
 }
 
-func redirect(w http.ResponseWriter, req *http.Request) {
-	target := "https://" + req.Host + req.URL.Path
-	if len(req.URL.RawQuery) > 0 {
-		target += "?" + req.URL.RawQuery
-	}
-	log.Printf("redirect to: %s", target)
-	http.Redirect(w, req, target,
-		http.StatusTemporaryRedirect)
-}
-
-func StartServer(webPort, webpackDevServer, indexBundle string, emojiServiceClient pb.EmojiServiceClient, votingClient pb.VotingServiceClient, tlsConfig *tls.Config) {
+func StartServer(webPort, webpackDevServer, indexBundle string, emojiServiceClient pb.EmojiServiceClient, votingClient pb.VotingServiceClient) {
 	webApp := &WebApp{
 		emojiServiceClient:  emojiServiceClient,
 		votingServiceClient: votingClient,
@@ -412,44 +401,7 @@ func StartServer(webPort, webpackDevServer, indexBundle string, emojiServiceClie
 	// TODO: make static assets dir configurable
 	http.Handle("/dist/", http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
 
-	server := http.Server{
-		Addr:      fmt.Sprintf(":%s", webPort),
-		Handler:   nil,
-		TLSConfig: tlsConfig,
-	}
-	go http.ListenAndServe(":8080", http.HandlerFunc(redirect))
-	err := server.ListenAndServeTLS("", "")
-	if err != nil {
-		panic(err)
-	}
-}
-
-func StartServerNoTLS(webPort, webpackDevServer, indexBundle string, emojiServiceClient pb.EmojiServiceClient, votingClient pb.VotingServiceClient) {
-	webApp := &WebApp{
-		emojiServiceClient:  emojiServiceClient,
-		votingServiceClient: votingClient,
-		indexBundle:         indexBundle,
-		webpackDevServer:    webpackDevServer,
-	}
-
-	log.Printf("Starting web server on WEB_PORT=[%s]", webPort)
-	handle("/", webApp.indexHandler)
-	handle("/leaderboard", webApp.indexHandler)
-	handle("/js", webApp.jsHandler)
-	handle("/img/favicon.ico", webApp.faviconHandler)
-	handle("/api/list", webApp.listEmojiHandler)
-	handle("/api/vote", webApp.voteEmojiHandler)
-	handle("/api/leaderboard", webApp.leaderboardHandler)
-
-	// TODO: make static assets dir configurable
-	http.Handle("/dist/", http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
-
-	server := http.Server{
-		Addr:    fmt.Sprintf(":%s", webPort),
-		Handler: nil,
-	}
-
-	err := server.ListenAndServe()
+	err := http.ListenAndServe(fmt.Sprintf(":%s", webPort), nil)
 	if err != nil {
 		panic(err)
 	}

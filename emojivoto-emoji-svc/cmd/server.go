@@ -13,13 +13,11 @@ import (
 	"contrib.go.opencensus.io/exporter/ocagent"
 	"github.com/edgelesssys/emojivoto/emojivoto-emoji-svc/api"
 	"github.com/edgelesssys/emojivoto/emojivoto-emoji-svc/emoji"
-	"github.com/edgelesssys/ego/marble"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opencensus.io/plugin/ocgrpc"
 	"go.opencensus.io/trace"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 var (
@@ -29,20 +27,13 @@ var (
 )
 
 func main() {
+
 	if grpcPort == "" {
 		log.Fatalf("GRPC_PORT (currently [%s]) environment variable must me set to run the server.", grpcPort)
 	}
 
-	// get TLS config
-	serverCfg, err := marble.GetTLSConfig(true)
-	if err != nil {
-		log.Fatalf("Failed to retrieve server TLS config from ego")
-	}
-	// create creds
-	serverCreds := credentials.NewTLS(serverCfg)
-
 	oce, err := ocagent.NewExporter(
-		ocagent.WithTLSCredentials(serverCreds),
+		ocagent.WithInsecure(),
 		ocagent.WithReconnectionPeriod(5*time.Second),
 		ocagent.WithAddress(ocagentHost),
 		ocagent.WithServiceName("voting"))
@@ -77,7 +68,6 @@ func main() {
 			grpc.StatsHandler(&ocgrpc.ServerHandler{}),
 			grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 			grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
-			grpc.Creds(serverCreds),
 		)
 		api.NewGrpServer(grpcServer, allEmoji)
 		log.Printf("Starting grpc server on GRPC_PORT=[%s]", grpcPort)

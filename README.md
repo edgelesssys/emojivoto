@@ -264,7 +264,7 @@ Confidential emojivoto is build as a confidential computing application:
     We can now update the image used by the emojivoto voting Statefulset:
 
     ```bash
-    kubectl set image -n emojivoto statefulset/voting voting-svc=ghcr.io/edgelesssys/emojivoto/voting-svc:v0.4.0-fix
+    kubectl set image -n emojivoto statefulset/voting voting-svc=ghcr.io/edgelesssys/emojivoto/voting-svc:v0.5.0-fix
     ```
 
     Updating the manifest will invalidate MarbleRun's certificate chain so that the existing services will not accept old versions of the updated voting service anymore. Hence, we need to restart the other services to obtain a fresh certificate chain:
