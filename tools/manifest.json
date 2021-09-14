@@ -78,11 +78,11 @@
 			"Type": "cert-ecdsa",
 			"Cert": {
 				"Subject": {
-					"CommonName": "localhost",
-					"DNSNames": [
-						"localhost"
-					]
-				}
+					"CommonName": "localhost"
+				},
+				"DNSNames": [
+					"localhost"
+				]
 			},
 			"ValidFor": 7
 		}
