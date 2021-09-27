@@ -26,6 +26,7 @@ spec:
         app: voting-svc
         version: v1
         marblerun/marbletype: voting-svc
+        marblerun/resource-injection: {{ .Values.resourceInjection }}
     spec:
       serviceAccountName: voting
       containers:

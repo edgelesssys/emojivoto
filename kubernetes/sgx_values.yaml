@@ -10,6 +10,8 @@ resources:
 simulation:
   OE_SIMULATION: "0"
 
+resourceInjection: "enabled"
+
 web:
   image: ghcr.io/edgelesssys/emojivoto/web
   imageVersion: v0.5.0

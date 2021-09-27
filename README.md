@@ -183,38 +183,18 @@ Confidential emojivoto is build as a confidential computing application:
         marblerun manifest set tools/manifest.json $MARBLERUN --insecure --recoverydata recovery.json
         ```
 
-1. Create and annotate emojivoto namespace for auto-injection
-
-    Create namespace
-
-    ```bash
-    kubectl create namespace emojivoto
-    ```
-
-    * Annotate the namespace if you're running minikube on a machine that support SGX1+FLC
-
-        ```bash
-        marblerun namespace add emojivoto
-        ```
-
-    * Otherwise
-
-        ```bash
-        marblerun namespace add emojivoto --no-sgx-injection
-        ```
-
 1. Deploy emojivoto using [helm](https://helm.sh/docs/intro/install/)
 
     * If you're running minikube on a machine that support SGX1+FLC
 
     ```bash
-    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes -n emojivoto
+    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
     ```
 
     * Otherwise
 
     ```bash
-    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes -n emojivoto
+    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
     ```
 
     You can check with `kubectl get pods -n emojivoto` that all pods are running.
