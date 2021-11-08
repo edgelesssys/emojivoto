@@ -26,6 +26,7 @@ spec:
         app: web-svc
         version: v1
         marblerun/marbletype: web
+        marblerun/resource-injection: {{ .Values.resourceInjection }}
     spec:
       serviceAccountName: web
       containers:

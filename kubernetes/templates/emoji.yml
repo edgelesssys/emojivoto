@@ -26,6 +26,7 @@ spec:
         app: emoji-svc
         version: v1
         marblerun/marbletype: emoji-svc
+        marblerun/resource-injection: {{ .Values.resourceInjection }}
     spec:
       serviceAccountName: emoji
       containers:
