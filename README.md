@@ -34,17 +34,27 @@ Confidential emojivoto is build as a confidential computing application:
 
     Deploy with [MarbleRun CLI](https://www.marblerun.sh/docs/getting-started/quickstart/#step-1-install-the-cli)
 
-    * If you're running minikube on a machine that support SGX1+FLC (e.g.Azure Standard_DC*s)
+    * If you're running minikube on an Azure VM that supports SGX1+FLC (e.g.Azure Standard_DC*s)
 
-    ```bash
-    marblerun install
-    ```
+        ```bash
+        marblerun install
+        ```
+
+    * If you're running minikube on a generic SGX capable machine that supports SGX1+FLC
+
+        Assuming you have a PCCS reachable at `https://localhost:8081/sgx/certification/v3/`, install MarbleRun using the following command:
+
+        ```bash
+        marblerun install --dcap-qpl=intel --dcap-pccs-url="https://host.minikube.internal:8081/sgx/certification/v3/" --dcap-secure-cert="FALSE"
+        ```
+
+        See [our docs](https://docs.edgeless.systems/marblerun/deployment/kubernetes#dcap-configuration) for more information on how to configure MarbleRun for generic SGX environments.
 
     * Otherwise
 
-    ```bash
-    marblerun install --simulation
-    ```
+        ```bash
+        marblerun install --simulation
+        ```
 
     Wait for the control plane to finish installing:
 
@@ -114,17 +124,18 @@ Confidential emojivoto is build as a confidential computing application:
 
     Create a new user called `emojivoto-admin` in the `Users` section in `tools/manifest.json`.
     Set the output of the previous command as the value for `Certificate`, and create a role binding for `updateVoting`:
+
     ```javascript
     {
         //...
         "Users": {
-	    	"emojivoto-admin": {
+            "emojivoto-admin": {
                 "Certificate": "-----BEGIN CERTIFICATE-----\nMIIFazCCA1...hIl3LfuHs=\n-----END CERTIFICATE-----\n",
                 "Roles": [
                     "updateVoting"
                 ]
             }
-	    }
+        }
         //...
     }
     ```
@@ -143,16 +154,18 @@ Confidential emojivoto is build as a confidential computing application:
     ```
 
     Use the following command to preserve newlines correctly:
+
     ```bash
     awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' recovery_pub.key
     ```
 
     Set the output of the previous command in `tools/manifest.json` as the value for `recoveryKey1` in the `RecoveryKeys` section:
-    ```json
+
+    ```javascript
     //...
     "RecoveryKeys": {
-		"recoveryKey1": "-----BEGIN PUBLIC KEY-----\nMIICIjANBg...8CAwEAAQ==\n-----END PUBLIC KEY-----\n"
-	}
+        "recoveryKey1": "-----BEGIN PUBLIC KEY-----\nMIICIjANBg...8CAwEAAQ==\n-----END PUBLIC KEY-----\n"
+    }
     //...
     ```
 
@@ -185,34 +198,47 @@ Confidential emojivoto is build as a confidential computing application:
 
 1. Deploy emojivoto using [helm](https://helm.sh/docs/intro/install/)
 
-    * If you're running minikube on a machine that support SGX1+FLC
+    * If you're running minikube on an Azure VM that supports SGX1+FLC
 
-    ```bash
-    helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
-    ```
+        ```bash
+        helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
+        ```
+
+    * If you're running minikube on a SGX capable machine that supports SGX1+FLC
+
+        Assuming you have a PCCS reachable at `https://localhost:8081/sgx/certification/v3/`, install emojivoto using the following command:
+
+        ```bash
+        helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto \
+            --set dcap.qpl=intel \
+            --set dcap.pccsUrl="https://host.minikube.internal:8081/sgx/certification/v3/" \
+            --set dcap.useSecureCert="FALSE"
+        ```
+
+        The values for `dcap.qpl` and `dcap.useSecureCert` should be the same as the values for the flags `--dcap-pccs-url` and `--dcap-secure-cert` used when installing MarbleRun.
 
     * Otherwise
 
-    ```bash
-    helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
-    ```
+        ```bash
+        helm install -f ./kubernetes/nosgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto
+        ```
 
     You can check with `kubectl get pods -n emojivoto` that all pods are running.
-
 
 1. Verify the manifest
     You can verify the manifest on the client-side before using the app:
 
     * If you're running minikube on a machine that support SGX1+FLC
-    ```bash
-    marblerun manifest verify tools/manifest.json $MARBLERUN
-    ```
+
+        ```bash
+        marblerun manifest verify tools/manifest.json $MARBLERUN
+        ```
 
     * Otherwise
-    ```bash
-    marblerun manifest verify tools/manifest.json $MARBLERUN --insecure
-    ```
 
+        ```bash
+        marblerun manifest verify tools/manifest.json $MARBLERUN --insecure
+        ```
 
 1. Use the app!
 
@@ -221,7 +247,7 @@ Confidential emojivoto is build as a confidential computing application:
     ```
 
     * Browse to [https://localhost](https://localhost).
-    * If your running on a custom domain browse to https://\<your-domain\>
+    * If your running on a custom domain browse to `https://\<your-domain\>`
 
     You’ll be presented with a certificate warning because your browser does not know MarbleRun’s root certificate as a root of trust. You can safely ignore this error for now and proceed to the website.
     Voila! Your emoji votes have never been safer!
@@ -241,6 +267,7 @@ Confidential emojivoto is build as a confidential computing application:
     ```bash
     marblerun manifest update tools/update-manifest.json $MARBLERUN --cert admin_certificate.crt --key admin_private.key [--insecure]
     ```
+
     We can now update the image used by the emojivoto voting Statefulset:
 
     ```bash
@@ -345,13 +372,13 @@ The following tasks are performed by the script:
     * emojivoto-xxx.cluster-domain -> NGINX-Ingress-Controller
 1. Create an emojivoto deployment
 1. Create an ingress resource to forward traffic via HTTPS-SNI
-    * https://emojivoto-xxx.cluster-domain -> emojivoto
+    * `https://emojivoto-xxx.cluster-domain` -> emojivoto
 
 Uninstall with:
+
 ```bash
 tools/aks_uninstall.sh
 ```
-
 
 ### Generating some traffic
 
