@@ -36,6 +36,10 @@ spec:
             configMapKeyRef:
               name: oe-config
               key: OE_SIMULATION
+        {{ if .Values.dcap  }}
+        - name: DCAP_LIBRARY
+          value: "{{ .Values.dcap.qpl }}"
+        {{ end }}
         image: {{ .Values.emoji.image }}:{{ .Values.emoji.imageVersion }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: emoji-svc
@@ -49,10 +53,21 @@ spec:
         volumeMounts:
         - name: emoji-data
           mountPath: /emoji-svc/data
+        {{ if .Values.dcap }}
+        - name: dcap-conf
+          mountPath: /etc/sgx_default_qcnl.conf
+          subPath: sgx_default_qcnl.conf
+        {{ end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+      {{ if .Values.dcap }}
+      - name: dcap-conf
+        configMap:
+          name: emojivoto-dcap-config
+      {{ end }}
   volumeClaimTemplates:
   - metadata:
       name: emoji-data

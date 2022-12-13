@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package emojivoto.v1;
+option go_package = "github.com/edgelesssys/emojivoto/emojivoto_v1";
 
 message VotingResult {
     string Shortcode = 1;

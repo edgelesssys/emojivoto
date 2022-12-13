@@ -10,10 +10,10 @@ import (
 
 type EmojiServiceServer struct {
 	allEmoji emoji.AllEmoji
+	pb.UnimplementedEmojiServiceServer
 }
 
 func (svc *EmojiServiceServer) ListAll(ctx context.Context, req *pb.ListAllEmojiRequest) (*pb.ListAllEmojiResponse, error) {
-
 	emoji := svc.allEmoji.List()
 
 	list := make([]*pb.Emoji, 0)
@@ -44,6 +44,6 @@ func (svc *EmojiServiceServer) FindByShortcode(ctx context.Context, req *pb.Find
 
 func NewGrpServer(grpcServer *grpc.Server, allEmoji emoji.AllEmoji) {
 	pb.RegisterEmojiServiceServer(grpcServer, &EmojiServiceServer{
-		allEmoji,
+		allEmoji: allEmoji,
 	})
 }

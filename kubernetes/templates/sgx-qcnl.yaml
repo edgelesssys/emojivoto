@@ -1,0 +1,14 @@
+{{ if .Values.dcap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: emojivoto-dcap-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: dcap-config
+    app.kubernetes.io/name: emojivoto-dcap-config
+data:
+  sgx_default_qcnl.conf: |
+    PCCS_URL={{ .Values.dcap.pccsUrl }}
+    USE_SECURE_CERT={{ .Values.dcap.useSecureCert }}
+{{ end }}

@@ -11,6 +11,7 @@ import (
 
 type PollServiceServer struct {
 	poll voting.Poll
+	pb.UnimplementedVotingServiceServer
 }
 
 func (pS *PollServiceServer) vote(shortcode string) (*pb.VoteResponse, error) {
@@ -440,9 +441,7 @@ func (pS *PollServiceServer) Results(context.Context, *pb.ResultsRequest) (*pb.R
 }
 
 func NewGrpServer(grpcServer *grpc.Server, poll voting.Poll) {
-	server := &PollServiceServer{
-		poll,
-	}
+	server := &PollServiceServer{poll: poll}
 
 	pb.RegisterVotingServiceServer(grpcServer, server)
 }
