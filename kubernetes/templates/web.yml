@@ -36,6 +36,10 @@ spec:
             configMapKeyRef:
               name: oe-config
               key: OE_SIMULATION
+        {{ if .Values.dcap  }}
+        - name: DCAP_LIBRARY
+          value: "{{ .Values.dcap.qpl }}"
+        {{ end }}
         image: {{ .Values.web.image }}:{{ .Values.web.imageVersion }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: web-svc
@@ -49,10 +53,21 @@ spec:
         volumeMounts:
         - name: web-data
           mountPath: /web-svc/data
+        {{ if .Values.dcap }}
+        - name: dcap-conf
+          mountPath: /etc/sgx_default_qcnl.conf
+          subPath: sgx_default_qcnl.conf
+        {{ end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+      {{ if .Values.dcap }}
+      - name: dcap-conf
+        configMap:
+          name: emojivoto-dcap-config
+      {{ end }}
   volumeClaimTemplates:
   - metadata:
       name: web-data

@@ -1,6 +1,6 @@
 {
-    "Exe": "target/emojivoto-web",
-    "Key": "private.pem",
+    "Exe": "../target/emojivoto-web",
+    "Key": "../private.pem",
     "Debug": true,
     "Heapsize": 512,
     "ProductID": 4,
