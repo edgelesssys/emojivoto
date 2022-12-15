@@ -32,7 +32,7 @@ Confidential emojivoto is build as a confidential computing application:
         minikube start --mount --mount-string /dev/sgx:/dev/sgx --memory 6g
         ```
 
-        Note that your system either requires Linux 5.11+ with SGX support enabled (`CONFIG_X86_SGX=y`), or Intel's SGX DCAP Driver is installed with version 1.41.
+        Note that your system either requires Linux 5.11+ with SGX support enabled (`CONFIG_X86_SGX=y`), or [Intel's SGX DCAP Driver](https://www.intel.com/content/www/us/en/developer/articles/guide/intel-software-guard-extensions-data-center-attestation-primitives-quick-install-guide.html) is installed with version 1.41.
 
         Install the Intel SGX device plugin:
 
