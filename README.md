@@ -23,12 +23,31 @@ Confidential emojivoto is build as a confidential computing application:
 
 1. Start Minikube
 
-   Start with a fresh minikube and give it sufficient memory:
+    Start with a fresh minikube and give it sufficient memory.
 
-   ```bash
-   minikube delete
-   minikube start --memory=6g
-   ```
+    * If you're running minikube on a machine that support SGX1+FLC (e.g.Azure Standard_DC*s)
+
+        ```bash
+        minikube delete
+        minikube start --mount --mount-string /dev/sgx:/dev/sgx --memory 6g
+        ```
+
+        Note that your system either requires Linux 5.11+ with SGX support enabled (`CONFIG_X86_SGX=y`), or [Intel's SGX DCAP Driver](https://www.intel.com/content/www/us/en/developer/articles/guide/intel-software-guard-extensions-data-center-attestation-primitives-quick-install-guide.html) is installed with version 1.41.
+
+        Install the Intel SGX device plugin:
+
+        ```bash
+        kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.10.1/cert-manager.yaml
+        kubectl wait --for=condition=available --timeout=60s -n cert-manager --all deployments
+        kubectl apply -k https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/sgx_plugin/overlays/epc-nfd/?ref=v0.23.0
+        ```
+
+    * Otherwise, if you want to test it out on an unsupported machine in simulation mode
+
+        ```bash
+        minikube delete
+        minikube start --memory=6g
+        ```
 
 1. Install MarbleRun
 
