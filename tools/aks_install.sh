@@ -13,7 +13,6 @@ MARBLERUN_DNSNAME="marblerun-$UNIQUE_SUFFIX"
 EMOJIVOTO_DNSNAME="emojivoto-$UNIQUE_SUFFIX"
 
 okStatus="\e[92m\u221A\e[0m"
-warnStatus="\e[93m\u203C\e[0m"
 failStatus="\e[91m\u00D7\e[0m"
 
 # exit if command fails
@@ -41,29 +40,10 @@ then
     exit
 fi
 
-if ! command -v era &> /dev/null
-then
-    echo "[$failStatus] era could not be found"
-    echo "See Installation Guide https://github.com/edgelesssys/era#install"
-    exit
-fi
-
 if ! command -v helm &> /dev/null
 then
     echo "[$failStatus] helm could not be found"
     echo "See Installation Guide https://helm.sh/docs/intro/install/"
-    exit
-fi
-
-if ! command -v curl &> /dev/null
-then
-    echo "[$failStatus] 'curl' could not be found"
-    exit
-fi
-
-if ! command -v wget &> /dev/null
-then
-    echo "[$failStatus] 'wget' could not be found"
     exit
 fi
 
@@ -83,7 +63,7 @@ fi
 
 
 # Get cluster info
-REGION=$(az aks show --resource-group $RESOURCEGROUP --name $CLUSTERNAME --query location)
+REGION=$(az aks show --resource-group "$RESOURCEGROUP" --name "$CLUSTERNAME" --query location)
 temp="${REGION%\"}"
 REGION="${temp#\"}"
 DOMAIN="$REGION.cloudapp.azure.com"
@@ -97,11 +77,11 @@ az aks get-credentials --resource-group "$RESOURCEGROUP" --name "$CLUSTERNAME"
 if [ "$LINKERD" = true ]
 then
     linkerd_execute() {
-        eval $@ >/dev/null 2>/tmp/linkerd_output
-        if [ $? -eq 0 ]; then
-            echo -e "[$okStatus] '$@' succeeded"
+        if ${@} >/dev/null 2>/tmp/linkerd_output
+        then
+            echo -e "[$okStatus] $* succeeded"
         else
-            echo -e "[$failStatus] '$@' failed"
+            echo -e "[$failStatus] $* failed"
             echo -en "\e[91m"
             cat /tmp/linkerd_output
             echo -en "\e[0m"
@@ -118,12 +98,6 @@ fi
 # 2. Deploy MarbleRun+DNS and Ingress-Controller+DNS
 #
 
-# install ingress controller
-echo "[*] Installing nginx-ingress-controller..."
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx > /dev/null
-helm install --namespace kube-system --set rbac.create=true --set controller.stats.enabled=true --set controller.extraArgs.enable-ssl-passthrough=""  --set controller.replicaCount=2 --set controller.nodeSelector."beta\.kubernetes\.io/os"=linux  --set defaultBackend.nodeSelector."beta\.kubernetes\.io/os"=linux nginx-ingress ingress-nginx/ingress-nginx > /dev/null
-echo -e "[$okStatus] Done"
-
 # install coordinator
 echo "[*] Installing marblerun-coordinator..."
 kubectl create ns marblerun > /dev/null
@@ -139,49 +113,81 @@ echo -e "[$okStatus] Done"
 
 # set dns for coordinator
 echo "[*] Setting DNS for the marblerun-coordinator"
+kubectl apply -f - <<EOF
+kind: Service
+apiVersion: v1
+metadata:
+  name: marblerun-coordinator-loadbalancer
+  namespace: marblerun
+spec:
+  type: LoadBalancer
+  selector:
+    edgeless.systems/control-plane-component: coordinator
+    edgeless.systems/control-plane-ns: marblerun
+  ports:
+  - name: http
+    port: 4433
+    targetPort: 4433
+EOF
+
 IP=""
 echo -n "[*] Waiting for LoadBalancer to assign a public IP..."
 until [[ $IP =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]];
 do
-    IP=$(kubectl -n marblerun get svc coordinator-client-api -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+    IP=$(kubectl -n marblerun get svc marblerun-coordinator-loadbalancer -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
     echo -n "."
     sleep 3
 done
 PUBLICIPID=$(az network public-ip list --query "[?ipAddress!=null]|[?contains(ipAddress, '$IP')].[id]" --output tsv)
-az network public-ip update --ids $PUBLICIPID --dns-name "$MARBLERUN_DNSNAME" > /dev/null
+az network public-ip update --ids "$PUBLICIPID" --dns-name "$MARBLERUN_DNSNAME" > /dev/null
 MARBLERUN=""
 until [[ $MARBLERUN == "$MARBLERUN_DNSNAME."* ]]
 do
-    MARBLERUN="$(az network public-ip show --ids $PUBLICIPID --query "[dnsSettings.fqdn]" --output tsv):4433"
+    MARBLERUN="$(az network public-ip show --ids "$PUBLICIPID" --query "[dnsSettings.fqdn]" --output tsv):4433"
     echo -n "."
     sleep 3
 done
 echo ""
 echo -e "[$okStatus] Done"
 
+# set dns for emojivoto
+echo "[*] Setting DNS for emojivoto"
+kubectl create ns emojivoto > /dev/null
+kubectl apply -f - <<EOF
+kind: Service
+apiVersion: v1
+metadata:
+  name: emojivoto-web-loadbalancer
+  namespace: emojivoto
+spec:
+  type: LoadBalancer
+  selector:
+    app: web-svc
+  ports:
+  - name: http
+    port: 443
+    targetPort: 4433
+EOF
 
-# set dns for ingress controller
-echo "[*] Setting DNS for the ingress"
 IP=""
 echo -n "[*] Waiting for LoadBalancer to assign a public IP..."
 until [[ $IP =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]];
 do
-    IP=$(kubectl -n kube-system get svc nginx-ingress-ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+    IP=$(kubectl -n emojivoto get svc emojivoto-web-loadbalancer -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
     echo -n "."
     sleep 3
 done
 PUBLICIPID=$(az network public-ip list --query "[?ipAddress!=null]|[?contains(ipAddress, '$IP')].[id]" --output tsv)
-az network public-ip update --ids $PUBLICIPID --dns-name "$EMOJIVOTO_DNSNAME" > /dev/null
+az network public-ip update --ids "$PUBLICIPID" --dns-name "$EMOJIVOTO_DNSNAME" > /dev/null
 EMOJIVOTO=""
 until [[ $EMOJIVOTO == "$EMOJIVOTO_DNSNAME."* ]]
 do
-    EMOJIVOTO="$(az network public-ip show --ids $PUBLICIPID --query "[dnsSettings.fqdn]" --output tsv)"
+    EMOJIVOTO="$(az network public-ip show --ids "$PUBLICIPID" --query "[dnsSettings.fqdn]" --output tsv)"
     echo -n "."
     sleep 3
 done
 echo ""
 echo -e "[$okStatus] Done"
-
 
 #
 # 3. Deploy emojivoto
@@ -191,13 +197,11 @@ echo -e "[$okStatus] Done"
 echo "[*] Setting the manifest"
 manifest=$(sed "s/localhost/$EMOJIVOTO/g" tools/manifest.json)
 echo "$manifest" > /tmp/manifest.json
-marblerun manifest set /tmp/manifest.json $MARBLERUN
+marblerun manifest set /tmp/manifest.json "$MARBLERUN"
 echo -e "[$okStatus] Done"
 
 # install emojivoto
 echo "[*] Installing emojivoto"
-kubectl create ns emojivoto > /dev/null
-marblerun namespace add emojivoto
 if [ "$LINKERD" = true ]
 then
     kubectl annotate ns emojivoto linkerd.io/inject=enabled > /dev/null
@@ -219,19 +223,21 @@ done
 echo ""
 echo -e "[$okStatus] Done"
 
-# set ingress for emojivoto
-echo "[*] Setting ingress route for emojivoto"
-template=$(sed "s/{{DOMAIN}}/$EMOJIVOTO/g" tools/emojivoto_ingress.yaml.template)
-echo "$template" | kubectl -n emojivoto apply -f - > /dev/null
+#
+# 4. Get certificate chain from the Coordinator
+#
+
+echo "[*] Getting certificate chain from the Coordinator"
+marblerun manifest verify /tmp/manifest.json "$MARBLERUN" --coordinator-cert ./marblerun.crt
 echo -e "[$okStatus] Done"
 
 #
-# 4. Finish
+# 5. Finish
 #
 
 echo -e "[$okStatus] All done and ready to roll!🚀"
-echo -e "[$okStatus] Install ./marblerun.crt in the Trusted-Root-CA store of your browser"
-echo -e "[$okStatus] Visit https://$EMOJIVOTO"
+echo -e "\n\tInstall ./marblerun.crt in the Trusted-Root-CA store of your browser"
+echo -e "\tVisit https://$EMOJIVOTO"
 
 if [ "$LINKERD" = true ]
 then

@@ -13,3 +13,4 @@ recovery.json
 recovery_key_decrypted
 recovery_key_encrypted
 private.pem
+marblerun.crt
