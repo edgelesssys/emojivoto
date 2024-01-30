@@ -88,19 +88,6 @@ Confidential emojivoto is build as a confidential computing application:
     export MARBLERUN=localhost:4433
     ```
 
-1. Verify the Quote and get the Coordinator's Root-Certificate
-    * If you're running minikube on a machine that support SGX1+FLC
-
-        ```bash
-        marblerun certificate root $MARBLERUN -o marblerun.crt
-        ```
-
-    * Otherwise
-
-        ```bash
-        marblerun certificate root $MARBLERUN -o marblerun.crt --insecure
-        ```
-
 1. (Optional) Create a user key and certificate
 
     To verify that your deployment has not been altered, the Manifest is usually set in stone after it was set to ensure no one can alter with your cluster.
@@ -213,6 +200,19 @@ Confidential emojivoto is build as a confidential computing application:
 
         ```bash
         marblerun manifest set tools/manifest.json $MARBLERUN --insecure --recoverydata recovery.json
+        ```
+
+1. Verify the Quote and get the Coordinator's Root-Certificate
+    * If you're running minikube on a machine that support SGX1+FLC
+
+        ```bash
+        marblerun manifest verify tools/manifest.json $MARBLERUN --coordinator-cert marblerun.crt
+        ```
+
+    * Otherwise
+
+        ```bash
+        marblerun manifest verify tools/manifest.json $MARBLERUN --coordinator-cert marblerun.crt --insecure
         ```
 
 1. Deploy emojivoto using [helm](https://helm.sh/docs/intro/install/)
