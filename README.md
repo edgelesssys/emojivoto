@@ -37,9 +37,10 @@ Confidential emojivoto is build as a confidential computing application:
         Install the Intel SGX device plugin:
 
         ```bash
-        kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.10.1/cert-manager.yaml
+        kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.12.2/cert-manager.yaml
         kubectl wait --for=condition=available --timeout=60s -n cert-manager --all deployments
-        kubectl apply -k https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/sgx_plugin/overlays/epc-nfd/?ref=v0.23.0
+        kubectl apply -k https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/sgx_plugin/overlays/epc-register/?ref=v0.27.1
+        kubectl apply -k https://github.com/intel/intel-device-plugins-for-kubernetes/deployments/sgx_admissionwebhook/overlays/default-with-certmanager/?ref=v0.27.1
         ```
 
     * Otherwise, if you want to test it out on an unsupported machine in simulation mode
