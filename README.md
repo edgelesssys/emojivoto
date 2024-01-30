@@ -370,12 +370,10 @@ Confidential emojivoto is build as a confidential computing application:
 
 ### In AKS
 
-We have provided a [script](tools/aks_install.sh) to deploy emojivoto in an AKS cluster:
+We provide a [script](tools/aks_install.sh) to deploy emojivoto in an existing AKS cluster:
 
 ```bash
 tools/aks_install.sh <azure resourceGroup> <azure clusterName>
-# Example
-tools/aks_install edgeless emojivoto
 ```
 
 The script requires the [bash Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) to be installed.
@@ -385,13 +383,11 @@ The following tasks are performed by the script:
 
 1. Optionally install linkerd
 1. Install MarbleRun
-1. Install an NGINX-Ingress-Controller
 1. Associate domain names with LoadBalancer public IPs
     * marblerun-xxx.cluster-domain -> MarbleRun Client API
-    * emojivoto-xxx.cluster-domain -> NGINX-Ingress-Controller
+    * emojivoto-xxx.cluster-domain -> emojivoto web frontend
 1. Create an emojivoto deployment
-1. Create an ingress resource to forward traffic via HTTPS-SNI
-    * `https://emojivoto-xxx.cluster-domain` -> emojivoto
+1. Download and verify root certificates for the emojivoto deployment
 
 Uninstall with:
 
