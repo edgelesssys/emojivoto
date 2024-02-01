@@ -212,15 +212,10 @@ helm install emojivoto ./kubernetes \
 echo -e "[$okStatus] Done"
 
 # waiting for emojivoto to come up
-echo -n "[*] Waiting for emojivoto to be ready..."
-WEBSTATE=""
-until [[ $WEBSTATE == "Running" ]]
-do
-    WEBSTATE=$(kubectl -n emojivoto get pod web-0 -o jsonpath="{.status.phase}")
-    echo -n "."
-    sleep 3
-done
-echo ""
+echo "[*] Waiting for emojivoto to be ready..."
+kubectl rollout status statefulset -n emojivoto emoji --timeout=120s
+kubectl rollout status statefulset -n emojivoto web --timeout=120s
+kubectl rollout status statefulset -n emojivoto voting --timeout=120s
 echo -e "[$okStatus] Done"
 
 #
@@ -237,7 +232,7 @@ echo -e "[$okStatus] Done"
 
 echo -e "[$okStatus] All done and ready to roll!🚀"
 echo -e "\n\tInstall ./marblerun.crt in the Trusted-Root-CA store of your browser"
-echo -e "\tVisit https://$EMOJIVOTO"
+echo -e "\tVisit https://$EMOJIVOTO\n"
 
 if [ "$LINKERD" = true ]
 then
