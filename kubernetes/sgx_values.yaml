@@ -13,8 +13,8 @@ simulation:
 resourceInjection: "enabled"
 
 dcap:
-  pccsUrl: "https://global.acccache.azure.net/sgx/certification/v4/"
-  useSecureCert: "TRUE"
+  pccsUrl: ""
+  useSecureCert: ""
 
 web:
   image: ghcr.io/edgelesssys/emojivoto/web

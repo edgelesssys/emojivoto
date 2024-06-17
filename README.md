@@ -65,7 +65,7 @@ Confidential emojivoto is build as a confidential computing application:
         Assuming you have a PCCS reachable at `https://localhost:8081/sgx/certification/v3/`, install MarbleRun using the following command:
 
         ```bash
-        marblerun install --dcap-qpl=intel --dcap-pccs-url="https://host.minikube.internal:8081/sgx/certification/v3/" --dcap-secure-cert="FALSE"
+        marblerun install --dcap-pccs-url="https://host.minikube.internal:8081/sgx/certification/v3/" --dcap-secure-cert="FALSE"
         ```
 
         See [our docs](https://docs.edgeless.systems/marblerun/deployment/kubernetes#dcap-configuration) for more information on how to configure MarbleRun for generic SGX environments.
@@ -230,12 +230,11 @@ Confidential emojivoto is build as a confidential computing application:
 
         ```bash
         helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto \
-            --set dcap.qpl=intel \
             --set dcap.pccsUrl="https://host.minikube.internal:8081/sgx/certification/v3/" \
             --set dcap.useSecureCert="FALSE"
         ```
 
-        The values for `dcap.qpl` and `dcap.useSecureCert` should be the same as the values for the flags `--dcap-pccs-url` and `--dcap-secure-cert` used when installing MarbleRun.
+        The values for `dcap.pccsUrl` and `dcap.useSecureCert` should be the same as the values for the flags `--dcap-pccs-url` and `--dcap-secure-cert` used when installing MarbleRun.
 
     * Otherwise
 

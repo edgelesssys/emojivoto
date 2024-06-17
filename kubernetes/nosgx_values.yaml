@@ -8,8 +8,6 @@ simulation:
 
 resourceInjection: "disabled"
 
-dcap: {}
-
 web:
   image: ghcr.io/edgelesssys/emojivoto/web
   imageVersion: v0.6.0
