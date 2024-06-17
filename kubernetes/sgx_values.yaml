@@ -18,12 +18,12 @@ dcap:
 
 web:
   image: ghcr.io/edgelesssys/emojivoto/web
-  imageVersion: v0.6.0
+  imageVersion: v0.7.0
 
 emoji:
   image: ghcr.io/edgelesssys/emojivoto/emoji-svc
-  imageVersion: v0.6.0
+  imageVersion: v0.7.0
 
 voting:
   image: ghcr.io/edgelesssys/emojivoto/voting-svc
-  imageVersion: v0.6.0
+  imageVersion: v0.7.0
