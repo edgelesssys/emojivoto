@@ -1,16 +1,16 @@
-# syntax=docker/dockerfile:experimental
-
 FROM alpine/git:latest AS pull
 COPY . /emojivoto
 
-FROM ghcr.io/edgelesssys/ego-deploy:latest AS emoji_base
+ARG EGO_VER=v1.5.3
+
+FROM ghcr.io/edgelesssys/ego-deploy:${EGO_VER} AS emoji_base
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl dnsutils iptables jq nghttp2 && \
     apt clean && \
     apt autoclean
 COPY ./start.sh /start.sh
 
-FROM ghcr.io/edgelesssys/ego-dev:latest AS emoji_build
+FROM ghcr.io/edgelesssys/ego-dev:${EGO_VER} AS emoji_build
 WORKDIR /node
 RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh && \
     bash nodesource_setup.sh
@@ -35,7 +35,7 @@ RUN --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-web/private.pem,r
     --mount=type=secret,id=signingkey,dst=/emojivoto/emojivoto-voting-svc/private.pem,required=true \
     ego env make build
 
-FROM ghcr.io/edgelesssys/ego-dev:latest AS patch_build
+FROM ghcr.io/edgelesssys/ego-dev:${EGO_VER} AS patch_build
 RUN apt update && apt install -y wget tar unzip
 ARG GEN_GO_VER=1.28.1
 ARG GEN_GO_GRPC_VER=1.2.0
