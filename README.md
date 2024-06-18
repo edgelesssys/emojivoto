@@ -65,7 +65,7 @@ Confidential emojivoto is build as a confidential computing application:
         Assuming you have a PCCS reachable at `https://localhost:8081/sgx/certification/v3/`, install MarbleRun using the following command:
 
         ```bash
-        marblerun install --dcap-qpl=intel --dcap-pccs-url="https://host.minikube.internal:8081/sgx/certification/v3/" --dcap-secure-cert="FALSE"
+        marblerun install --dcap-pccs-url="https://host.minikube.internal:8081/sgx/certification/v3/" --dcap-secure-cert="FALSE"
         ```
 
         See [our docs](https://docs.edgeless.systems/marblerun/deployment/kubernetes#dcap-configuration) for more information on how to configure MarbleRun for generic SGX environments.
@@ -230,12 +230,11 @@ Confidential emojivoto is build as a confidential computing application:
 
         ```bash
         helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto \
-            --set dcap.qpl=intel \
             --set dcap.pccsUrl="https://host.minikube.internal:8081/sgx/certification/v3/" \
             --set dcap.useSecureCert="FALSE"
         ```
 
-        The values for `dcap.qpl` and `dcap.useSecureCert` should be the same as the values for the flags `--dcap-pccs-url` and `--dcap-secure-cert` used when installing MarbleRun.
+        The values for `dcap.pccsUrl` and `dcap.useSecureCert` should be the same as the values for the flags `--dcap-pccs-url` and `--dcap-secure-cert` used when installing MarbleRun.
 
     * Otherwise
 
@@ -285,13 +284,13 @@ Confidential emojivoto is build as a confidential computing application:
     To upload the "Update Manifest" we need to authenticate ourselves to the Coordinator using the previously created admin key and certificate:
 
     ```bash
-    marblerun manifest update tools/update-manifest.json $MARBLERUN --cert admin_certificate.crt --key admin_private.key [--insecure]
+    marblerun manifest update apply tools/update-manifest.json $MARBLERUN --cert admin_certificate.crt --key admin_private.key [--insecure]
     ```
 
     We can now update the image used by the emojivoto voting Statefulset:
 
     ```bash
-    kubectl set image -n emojivoto statefulset/voting voting-svc=ghcr.io/edgelesssys/emojivoto/voting-svc:v0.5.0-fix
+    kubectl set image -n emojivoto statefulset/voting voting-svc=ghcr.io/edgelesssys/emojivoto/voting-svc:v0.7.0-fix
     ```
 
     Updating the manifest will invalidate MarbleRun's certificate chain so that the existing services will not accept old versions of the updated voting service anymore. Hence, we need to restart the other services to obtain a fresh certificate chain:
@@ -340,7 +339,7 @@ Confidential emojivoto is build as a confidential computing application:
         Luckily we provided a recovery key when we first set the manifest. We can now decrypt the recovery secret we received from the coordinator:
 
         ```bash
-        cat recovery.json | jq -r '.RecoverySecrets.recoveryKey1' | base64 -d > recovery_key_encrypted
+        jq -r '.RecoverySecrets.recoveryKey1' -r recovery.json | base64 -d > recovery_key_encrypted
         openssl pkeyutl -inkey recovery_priv.key -in recovery_key_encrypted -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -decrypt -out recovery_key_decrypted
         ```
 
@@ -428,10 +427,11 @@ ego env make build
 Build docker images:
 
 ```bash
-docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_web --tag ghcr.io/edgelesssys/emojivoto/web:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
-docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_emoji_svc --tag ghcr.io/edgelesssys/emojivoto/emoji-svc:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
-docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_voting_svc --tag ghcr.io/edgelesssys/emojivoto/voting-svc:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
-docker buildx build --secret id=signingkey,src=<path to private.pem> --target release_voting_update --tag ghcr.io/edgelesssys/emojivoto/voting-svc:latest-fix . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
+export DOCKER_BUILDKIT=1
+docker build --secret id=signingkey,src=<path to private.pem> --target release_web --tag ghcr.io/edgelesssys/emojivoto/web:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
+docker build --secret id=signingkey,src=<path to private.pem> --target release_emoji_svc --tag ghcr.io/edgelesssys/emojivoto/emoji-svc:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
+docker build --secret id=signingkey,src=<path to private.pem> --target release_voting_svc --tag ghcr.io/edgelesssys/emojivoto/voting-svc:latest . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
+docker build --secret id=signingkey,src=<path to private.pem> --target release_voting_update --tag ghcr.io/edgelesssys/emojivoto/voting-svc:latest-fix . --label org.opencontainers.image.source=https://github.com/edgelesssys/emojivoto.git
 ```
 
 ## License

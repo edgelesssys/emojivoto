@@ -36,10 +36,12 @@ spec:
             configMapKeyRef:
               name: oe-config
               key: OE_SIMULATION
-        {{ if .Values.dcap  }}
-        - name: DCAP_LIBRARY
-          value: "{{ .Values.dcap.qpl }}"
-        {{ end }}
+        {{- if .Values.dcap }}
+        - name: PCCS_URL
+          value: {{ .Values.dcap.pccsUrl }}
+        - name: PCCS_USE_SECURE_CERT
+          value: {{ .Values.dcap.useSecureCert }}
+        {{- end }}
         image: {{ .Values.voting.image }}:{{ .Values.voting.imageVersion }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: voting-svc
@@ -53,21 +55,10 @@ spec:
         volumeMounts:
         - name: voting-data
           mountPath: /voting-svc/data
-        {{ if .Values.dcap }}
-        - name: dcap-conf
-          mountPath: /etc/sgx_default_qcnl.conf
-          subPath: sgx_default_qcnl.conf
-        {{ end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      volumes:
-      {{ if .Values.dcap }}
-      - name: dcap-conf
-        configMap:
-          name: emojivoto-dcap-config
-      {{ end }}
   volumeClaimTemplates:
   - metadata:
       name: voting-data
