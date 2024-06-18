@@ -284,13 +284,13 @@ Confidential emojivoto is build as a confidential computing application:
     To upload the "Update Manifest" we need to authenticate ourselves to the Coordinator using the previously created admin key and certificate:
 
     ```bash
-    marblerun manifest update tools/update-manifest.json $MARBLERUN --cert admin_certificate.crt --key admin_private.key [--insecure]
+    marblerun manifest update apply tools/update-manifest.json $MARBLERUN --cert admin_certificate.crt --key admin_private.key [--insecure]
     ```
 
     We can now update the image used by the emojivoto voting Statefulset:
 
     ```bash
-    kubectl set image -n emojivoto statefulset/voting voting-svc=ghcr.io/edgelesssys/emojivoto/voting-svc:v0.5.0-fix
+    kubectl set image -n emojivoto statefulset/voting voting-svc=ghcr.io/edgelesssys/emojivoto/voting-svc:v0.7.0-fix
     ```
 
     Updating the manifest will invalidate MarbleRun's certificate chain so that the existing services will not accept old versions of the updated voting service anymore. Hence, we need to restart the other services to obtain a fresh certificate chain:
@@ -339,7 +339,7 @@ Confidential emojivoto is build as a confidential computing application:
         Luckily we provided a recovery key when we first set the manifest. We can now decrypt the recovery secret we received from the coordinator:
 
         ```bash
-        cat recovery.json | jq -r '.RecoverySecrets.recoveryKey1' | base64 -d > recovery_key_encrypted
+        jq -r '.RecoverySecrets.recoveryKey1' -r recovery.json | base64 -d > recovery_key_encrypted
         openssl pkeyutl -inkey recovery_priv.key -in recovery_key_encrypted -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -decrypt -out recovery_key_decrypted
         ```
 
