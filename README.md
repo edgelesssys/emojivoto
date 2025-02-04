@@ -348,7 +348,7 @@ Confidential emojivoto is build as a confidential computing application:
         Now we can upload the key and recover MarbleRun without losing data:
 
         ```bash
-        marblerun recover recovery_key_decrypted $MARBLERUN [--insecure]
+        marblerun recover recovery_key_decrypted $MARBLERUN --key recovery_priv.key [--insecure]
         ```
 
         If the recovery was successful all emojivoto pods can once again start correctly.
