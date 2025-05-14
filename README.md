@@ -62,10 +62,10 @@ Confidential emojivoto is build as a confidential computing application:
 
     * If you're running minikube on a generic SGX capable machine that supports SGX1+FLC
 
-        Assuming you have a PCCS reachable at `https://localhost:8081/sgx/certification/v3/`, install MarbleRun using the following command:
+        Assuming you have a PCCS reachable at `https://localhost:8081/sgx/certification/v4/`, install MarbleRun using the following command:
 
         ```bash
-        marblerun install --dcap-pccs-url="https://host.minikube.internal:8081/sgx/certification/v3/" --dcap-secure-cert="FALSE"
+        marblerun install --dcap-pccs-url="https://host.minikube.internal:8081/sgx/certification/v4/" --dcap-secure-cert="FALSE"
         ```
 
         See [our docs](https://docs.edgeless.systems/marblerun/deployment/kubernetes#dcap-configuration) for more information on how to configure MarbleRun for generic SGX environments.
@@ -226,11 +226,11 @@ Confidential emojivoto is build as a confidential computing application:
 
     * If you're running minikube on a SGX capable machine that supports SGX1+FLC
 
-        Assuming you have a PCCS reachable at `https://localhost:8081/sgx/certification/v3/`, install emojivoto using the following command:
+        Assuming you have a PCCS reachable at `https://localhost:8081/sgx/certification/v4/`, install emojivoto using the following command:
 
         ```bash
         helm install -f ./kubernetes/sgx_values.yaml emojivoto ./kubernetes --create-namespace -n emojivoto \
-            --set dcap.pccsUrl="https://host.minikube.internal:8081/sgx/certification/v3/" \
+            --set dcap.pccsUrl="https://host.minikube.internal:8081/sgx/certification/v4/" \
             --set dcap.useSecureCert="FALSE"
         ```
 
